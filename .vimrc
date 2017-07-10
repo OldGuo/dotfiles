@@ -14,14 +14,14 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'tpope/vim-fugitive'
 Plugin 'airblade/vim-gitgutter'
-Plugin 'valloric/youcompleteme'
+" Plugin 'valloric/youcompleteme'
 Plugin 'scrooloose/syntastic'
 Plugin 'scrooloose/nerdtree'
 Plugin 'kien/ctrlp.vim'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'bling/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
-
+Plugin 'nathanaelkane/vim-indent-guides'
 
 " " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -57,6 +57,8 @@ nnoremap j gj
 nnoremap k gk
 set background=light
 colorscheme solarized
+set pastetoggle=<F3>
+set clipboard+=unnamed
 
 " Split Movement
 nnoremap <C-J> <C-W><C-J>
@@ -73,7 +75,6 @@ map <A-l> gt
 map <A-h> gT
 
 " NERDTree
-autocmd vimenter * NERDTree
 map <C-n> :NERDTreeToggle<CR>
 
 " Synastic
@@ -94,6 +95,16 @@ let g:airline#extensions#tabline#left_sep = ' '
 let g:airline#extensions#tabline#left_alt_sep = '|'
 let g:airline_powerline_fonts = 1
 let g:airline_theme='solarized'
+set laststatus=2
 
 " YouCompleteMe
 let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
+
+" Indent Guides
+let g:indent_guides_auto_colors = 0
+set ts=2 sw=2 et
+hi IndentGuidesOdd  ctermbg=lightgrey
+hi IndentGuidesEven ctermbg=lightgrey
+let g:indent_guides_start_level=2
+let g:indent_guides_guide_size=1
+autocmd VimEnter * :IndentGuidesEnable
