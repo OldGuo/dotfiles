@@ -14,7 +14,6 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'tpope/vim-fugitive'
 Plugin 'airblade/vim-gitgutter'
-" Plugin 'valloric/youcompleteme'
 Plugin 'scrooloose/syntastic'
 Plugin 'scrooloose/nerdtree'
 Plugin 'kien/ctrlp.vim'
@@ -22,6 +21,7 @@ Plugin 'altercation/vim-colors-solarized'
 Plugin 'bling/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'nathanaelkane/vim-indent-guides'
+Plugin 'majutsushi/tagbar'
 
 " " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -73,6 +73,9 @@ inoremap <C-t>     <Esc>:tabnew<CR>
 " Command to move among tabs in Konsole-style
 map <A-l> gt
 map <A-h> gT
+nnoremap <S-l>  :tabnext<CR>
+nnoremap <S-h>  :tabprev<CR>
+nnoremap <S-t>  :tabnew<CR>
 
 " NERDTree
 map <C-n> :NERDTreeToggle<CR>
@@ -86,6 +89,9 @@ let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
 
+" Tags
+nmap <F8> :TagbarToggle<CR>
+
 " ctrlp.vim
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 
@@ -96,9 +102,6 @@ let g:airline#extensions#tabline#left_alt_sep = '|'
 let g:airline_powerline_fonts = 1
 let g:airline_theme='solarized'
 set laststatus=2
-
-" YouCompleteMe
-let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
 
 " Indent Guides
 let g:indent_guides_auto_colors = 0
