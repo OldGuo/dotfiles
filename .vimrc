@@ -22,6 +22,9 @@ Plugin 'bling/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'majutsushi/tagbar'
+Plugin 'christoomey/vim-tmux-navigator'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+Plugin 'grep.vim'
 
 " " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -42,9 +45,9 @@ filetype plugin indent on    " required
 " General
 set number
 syntax enable
-set tabstop=2
-set softtabstop=2
-set shiftwidth=2
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 set expandtab
 set showcmd
 set cursorline
@@ -105,7 +108,6 @@ set laststatus=2
 
 " Indent Guides
 let g:indent_guides_auto_colors = 0
-set ts=2 sw=2 et
 hi IndentGuidesOdd  ctermbg=lightgrey
 hi IndentGuidesEven ctermbg=lightgrey
 let g:indent_guides_start_level=2
