@@ -62,6 +62,7 @@ set background=light
 colorscheme solarized
 set pastetoggle=<F3>
 set clipboard+=unnamed
+set mouse=a
 
 " Split Movement
 nnoremap <C-J> <C-W><C-J>
