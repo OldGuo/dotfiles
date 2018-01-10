@@ -26,6 +26,9 @@ Plugin 'christoomey/vim-tmux-navigator'
 Plugin 'Xuyuanp/nerdtree-git-plugin'
 Plugin 'grep.vim'
 Plugin 'valloric/youcompleteme'
+Plugin 'alvan/vim-closetag'
+Plugin 'pangloss/vim-javascript'
+Plugin 'mxw/vim-jsx'
 
 " " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -63,7 +66,8 @@ set background=light
 colorscheme solarized
 set pastetoggle=<F3>
 set mouse=a
-set backspace=2 
+set backspace=2
+set nofixendofline
 
 " Split Movement
 nnoremap <C-J> <C-W><C-J>
@@ -116,3 +120,20 @@ hi IndentGuidesEven ctermbg=lightgrey
 let g:indent_guides_start_level=2
 let g:indent_guides_guide_size=1
 autocmd VimEnter * :IndentGuidesEnable
+
+" YCM
+let g:ycm_collect_identifiers_from_tags_files = 1 " Let YCM read tags from Ctags file
+let g:ycm_use_ultisnips_completer = 1 " Default 1, just ensure
+let g:ycm_seed_identifiers_with_syntax = 1 " Completion for programming language's keyword
+let g:ycm_complete_in_comments = 1 " Completion in comments
+let g:ycm_complete_in_strings = 1 " Completion in string
+
+" CloseTag
+let g:closetag_filenames = '*.html,*.xhtml,*.phtml'
+let g:closetag_xhtml_filenames = '*.xhtml,*.jsx'
+let g:closetag_emptyTags_caseSensitive = 1
+let g:closetag_shortcut = '>'
+let g:closetag_close_shortcut = '<leader>>'
+
+" JSX
+let g:jsx_ext_required = 0
