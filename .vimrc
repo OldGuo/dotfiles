@@ -29,7 +29,7 @@ Plugin 'valloric/youcompleteme'
 Plugin 'alvan/vim-closetag'
 Plugin 'pangloss/vim-javascript'
 Plugin 'mxw/vim-jsx'
-Plugin 'raimondi/delimitmate'
+Plugin 'jiangmiao/auto-pairs'
 
 " " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -55,7 +55,7 @@ set softtabstop=4
 set shiftwidth=4
 set expandtab
 set showcmd
-set cursorline
+" set cursorline
 filetype indent on
 set wildmenu
 set showmatch
@@ -130,7 +130,7 @@ let g:ycm_complete_in_comments = 1 " Completion in comments
 let g:ycm_complete_in_strings = 1 " Completion in string
 
 " CloseTag
-let g:closetag_filenames = '*.html,*.xhtml,*.phtml'
+let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.jsx,*.js'
 let g:closetag_xhtml_filenames = '*.xhtml,*.jsx'
 let g:closetag_emptyTags_caseSensitive = 1
 let g:closetag_shortcut = '>'
