@@ -20,7 +20,7 @@ Plugin 'kien/ctrlp.vim'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'bling/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
-Plugin 'nathanaelkane/vim-indent-guides'
+Plugin 'yggdroot/indentline'
 Plugin 'majutsushi/tagbar'
 Plugin 'christoomey/vim-tmux-navigator'
 Plugin 'Xuyuanp/nerdtree-git-plugin'
@@ -32,6 +32,8 @@ Plugin 'jiangmiao/auto-pairs'
 Plugin 'leafgarland/typescript-vim'
 Plugin 'pangloss/vim-javascript'
 Plugin 'christoomey/vim-system-copy'
+Plugin 'ianks/vim-tsx'
+Plugin 'elzr/vim-json'
 
 
 " " All of your Plugins must be added before the following line
@@ -53,9 +55,9 @@ filetype plugin indent on    " required
 " General
 set number
 syntax enable
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
 set expandtab
 set showcmd
 " set cursorline
@@ -118,12 +120,12 @@ let g:airline_theme='solarized'
 set laststatus=2
 
 " Indent Guides
-let g:indent_guides_auto_colors = 0
-hi IndentGuidesOdd  ctermbg=lightgrey
-hi IndentGuidesEven ctermbg=lightgrey
-let g:indent_guides_start_level=2
-let g:indent_guides_guide_size=1
-autocmd VimEnter * :IndentGuidesEnable
+" let g:indent_guides_auto_colors = 0
+" hi IndentGuidesOdd  ctermbg=lightgrey
+" hi IndentGuidesEven ctermbg=lightgrey
+" let g:indent_guides_start_level=2
+" let g:indent_guides_guide_size=1
+" autocmd VimEnter * :IndentGuidesEnable
 
 " YCM
 let g:ycm_collect_identifiers_from_tags_files = 1 " Let YCM read tags from Ctags file
@@ -141,3 +143,6 @@ let g:closetag_close_shortcut = '<leader>>'
 
 " JSX
 let g:jsx_ext_required = 0
+
+" JSON
+let g:vim_json_syntax_conceal = 0
