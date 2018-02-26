@@ -18,8 +18,9 @@ Plugin 'scrooloose/syntastic'
 Plugin 'scrooloose/nerdtree'
 Plugin 'kien/ctrlp.vim'
 Plugin 'altercation/vim-colors-solarized'
-Plugin 'bling/vim-airline'
-Plugin 'vim-airline/vim-airline-themes'
+" Plugin 'bling/vim-airline'
+Plugin 'itchyny/lightline.vim'
+" Plugin 'vim-airline/vim-airline-themes'
 Plugin 'yggdroot/indentline'
 Plugin 'majutsushi/tagbar'
 Plugin 'christoomey/vim-tmux-navigator'
@@ -34,7 +35,10 @@ Plugin 'pangloss/vim-javascript'
 Plugin 'christoomey/vim-system-copy'
 Plugin 'ianks/vim-tsx'
 Plugin 'elzr/vim-json'
-
+Plugin 'tpope/vim-surround'
+Plugin 'jparise/vim-graphql'
+Plugin 'prettier/prettier'
+Plugin 'mitermayer/vim-prettier'
 
 " " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -74,6 +78,9 @@ set pastetoggle=<F3>
 set mouse=a
 set backspace=2
 set nofixendofline
+set ignorecase
+set smartcase
+set lazyredraw
 
 " Split Movement
 nnoremap <C-J> <C-W><C-J>
@@ -109,7 +116,7 @@ let g:syntastic_check_on_wq = 0
 nmap <F8> :TagbarToggle<CR>
 
 " ctrlp.vim
-set runtimepath^=~/.vim/bundle/ctrlp.vim
+let g:ctrlp_custom_ignore = '\v[\/]\.(DS_Storegit|hg|svn|optimized|compiled|node_modules)$'
 
 " Airline
 let g:airline#extensions#tabline#enabled = 1
@@ -119,13 +126,11 @@ let g:airline_powerline_fonts = 1
 let g:airline_theme='solarized'
 set laststatus=2
 
-" Indent Guides
-" let g:indent_guides_auto_colors = 0
-" hi IndentGuidesOdd  ctermbg=lightgrey
-" hi IndentGuidesEven ctermbg=lightgrey
-" let g:indent_guides_start_level=2
-" let g:indent_guides_guide_size=1
-" autocmd VimEnter * :IndentGuidesEnable
+" lightline
+let g:lightline = {
+      \ 'colorscheme': 'solarized',
+      \ }
+
 
 " YCM
 let g:ycm_collect_identifiers_from_tags_files = 1 " Let YCM read tags from Ctags file
@@ -146,3 +151,10 @@ let g:jsx_ext_required = 0
 
 " JSON
 let g:vim_json_syntax_conceal = 0
+
+" TypeScript
+autocmd QuickFixCmdPost [^l]* nested cwindow
+autocmd QuickFixCmdPost    l* nested lwindow
+
+" IndentLines
+let g:indentLine_enabled = 0
