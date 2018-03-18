@@ -16,11 +16,11 @@ Plugin 'tpope/vim-fugitive'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'scrooloose/syntastic'
 Plugin 'scrooloose/nerdtree'
-Plugin 'kien/ctrlp.vim'
+Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'altercation/vim-colors-solarized'
-" Plugin 'bling/vim-airline'
-Plugin 'itchyny/lightline.vim'
-" Plugin 'vim-airline/vim-airline-themes'
+Plugin 'bling/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
+
 Plugin 'yggdroot/indentline'
 Plugin 'majutsushi/tagbar'
 Plugin 'christoomey/vim-tmux-navigator'
@@ -28,17 +28,19 @@ Plugin 'Xuyuanp/nerdtree-git-plugin'
 Plugin 'mileszs/ack.vim'
 Plugin 'valloric/youcompleteme'
 Plugin 'alvan/vim-closetag'
-Plugin 'mxw/vim-jsx'
 Plugin 'jiangmiao/auto-pairs'
-Plugin 'leafgarland/typescript-vim'
+
 Plugin 'pangloss/vim-javascript'
-Plugin 'christoomey/vim-system-copy'
+Plugin 'mxw/vim-jsx'
+Plugin 'leafgarland/typescript-vim'
 Plugin 'ianks/vim-tsx'
+
+Plugin 'christoomey/vim-system-copy'
 Plugin 'elzr/vim-json'
 Plugin 'tpope/vim-surround'
 Plugin 'jparise/vim-graphql'
-Plugin 'prettier/prettier'
-Plugin 'mitermayer/vim-prettier'
+" Plugin 'w0rp/ale'
+Plugin 'prettier/vim-prettier'
 
 " " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -57,6 +59,7 @@ filetype plugin indent on    " required
 " Put your non-Plugin stuff after this line
 
 " General
+set encoding=utf8
 set number
 syntax enable
 set tabstop=2
@@ -81,6 +84,18 @@ set nofixendofline
 set ignorecase
 set smartcase
 set lazyredraw
+set shellpipe=>
+" set swapfile
+" set dir=~/tmp
+
+" Cursor Style
+if exists('$TMUX')
+  let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+  let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+else
+  let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+  let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+endif
 
 " Split Movement
 nnoremap <C-J> <C-W><C-J>
@@ -100,7 +115,9 @@ nnoremap <S-h>  :tabprev<CR>
 nnoremap <S-t>  :tabnew<CR>
 
 " NERDTree
-map <C-n> :NERDTreeToggle<CR>
+map <silent> <C-n> :NERDTreeToggle<CR> :NERDTreeMirror<CR>
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
 
 " Synastic
 set statusline+=%#warningmsg#
@@ -157,4 +174,7 @@ autocmd QuickFixCmdPost [^l]* nested cwindow
 autocmd QuickFixCmdPost    l* nested lwindow
 
 " IndentLines
-let g:indentLine_enabled = 0
+let g:indentLine_enabled = 1
+
+" Ale
+" let g:airline#extensions#ale#enabled = 1
