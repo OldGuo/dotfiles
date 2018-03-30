@@ -1,70 +1,53 @@
 set shell=/bin/bash
 
-" Vundle Things
-set nocompatible              " be iMproved, required
-filetype off                  " required
-
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
+call plug#begin()
 
 " let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'tpope/vim-fugitive'
-Plugin 'airblade/vim-gitgutter'
-Plugin 'scrooloose/syntastic'
-Plugin 'scrooloose/nerdtree'
-Plugin 'ctrlpvim/ctrlp.vim'
-Plugin 'altercation/vim-colors-solarized'
-Plugin 'bling/vim-airline'
-Plugin 'vim-airline/vim-airline-themes'
+Plug 'VundleVim/Vundle.vim'
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
+" Plugin 'scrooloose/syntastic'
+Plug 'scrooloose/nerdtree'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'altercation/vim-colors-solarized'
+Plug 'bling/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'junegunn/fzf'
 
-Plugin 'yggdroot/indentline'
-Plugin 'majutsushi/tagbar'
-Plugin 'christoomey/vim-tmux-navigator'
-Plugin 'Xuyuanp/nerdtree-git-plugin'
-Plugin 'mileszs/ack.vim'
-Plugin 'valloric/youcompleteme'
-Plugin 'alvan/vim-closetag'
-Plugin 'jiangmiao/auto-pairs'
+Plug 'yggdroot/indentline'
+Plug 'majutsushi/tagbar'
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'mileszs/ack.vim'
+Plug 'valloric/youcompleteme'
+Plug 'alvan/vim-closetag'
+Plug 'jiangmiao/auto-pairs'
 
-Plugin 'pangloss/vim-javascript'
-Plugin 'mxw/vim-jsx'
-Plugin 'leafgarland/typescript-vim'
-Plugin 'ianks/vim-tsx'
+Plug 'pangloss/vim-javascript'
+Plug 'mxw/vim-jsx'
+Plug 'leafgarland/typescript-vim'
+Plug 'ianks/vim-tsx'
 
-Plugin 'christoomey/vim-system-copy'
-Plugin 'elzr/vim-json'
-Plugin 'tpope/vim-surround'
-Plugin 'jparise/vim-graphql'
-" Plugin 'w0rp/ale'
-Plugin 'prettier/vim-prettier'
+Plug 'christoomey/vim-system-copy'
+Plug 'elzr/vim-json'
+Plug 'tpope/vim-surround'
+Plug 'jparise/vim-graphql'
+Plug 'w0rp/ale'
+Plug 'prettier/vim-prettier'
+Plug 'davidhalter/jedi-vim'
+Plug 'octol/vim-cpp-enhanced-highlight'
 
-" " All of your Plugins must be added before the following line
-call vundle#end()            " required
+call plug#end()
 
 filetype plugin indent on    " required
-" To ignore plugin indent changes, instead use:
-"filetype plugin on
-"
-" Brief help
-" :PluginList       - lists configured plugins
-" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
-" :PluginSearch foo - searches for foo; append `!` to refresh local cache
-" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
-
-" see :h vundle for more details or wiki for FAQ
-" Put your non-Plugin stuff after this line
 
 " General
 set encoding=utf8
 set number
 syntax enable
-set tabstop=2
-set softtabstop=2
-set shiftwidth=2
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 set expandtab
 set showcmd
 " set cursorline
@@ -87,6 +70,7 @@ set lazyredraw
 set shellpipe=>
 " set swapfile
 " set dir=~/tmp
+au FileType qf wincmd J
 
 " Cursor Style
 if exists('$TMUX')
@@ -120,20 +104,23 @@ let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
 
 " Synastic
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_python_pylint_args = "--load-plugins pylint_django"
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+" set statusline+=%#warningmsg#
+" set statusline+=%{SyntasticStatuslineFlag()}
+" set statusline+=%*
+" let g:syntastic_always_populate_loc_list = 1
+" let g:syntastic_python_pylint_args = "--load-plugins pylint_django"
+" let g:syntastic_auto_loc_list = 1
+" let g:syntastic_check_on_open = 1
+" let g:syntastic_check_on_wq = 0
+" let g:syntastic_mode_map = { 'mode': 'active', 'active_filetypes': [],'passive_filetypes': []  }
+" nnoremap <C-w>E :SyntasticCheck<CR> :SyntasticToggleMode<CR>
 
 " Tags
 nmap <F8> :TagbarToggle<CR>
 
 " ctrlp.vim
 let g:ctrlp_custom_ignore = '\v[\/]\.(DS_Storegit|hg|svn|optimized|compiled|node_modules)$'
+nnoremap <C-i>  :CtrlPLine<CR>
 
 " Airline
 let g:airline#extensions#tabline#enabled = 1
@@ -155,6 +142,7 @@ let g:ycm_use_ultisnips_completer = 1 " Default 1, just ensure
 let g:ycm_seed_identifiers_with_syntax = 1 " Completion for programming language's keyword
 let g:ycm_complete_in_comments = 1 " Completion in comments
 let g:ycm_complete_in_strings = 1 " Completion in string
+" let g:loaded_youcompleteme = 0
 
 " CloseTag
 let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.jsx,*.js,*.tsx'
@@ -178,3 +166,17 @@ let g:indentLine_enabled = 1
 
 " Ale
 " let g:airline#extensions#ale#enabled = 1
+let g:ale_sign_error = '>>'
+let g:ale_sign_warning = '--'
+
+" Ack
+cnoreabbrev Ack Ack!
+nnoremap <Leader>a :Ack!<Space>
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
+
+" fzf
+set rtp+=/usr/local/opt/fzf
+nmap ; :FZF<CR>
+
