@@ -6,9 +6,7 @@ call plug#begin()
 Plug 'VundleVim/Vundle.vim'
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
-" Plugin 'scrooloose/syntastic'
 Plug 'scrooloose/nerdtree'
-" Plug 'ctrlpvim/ctrlp.vim'
 Plug 'altercation/vim-colors-solarized'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
@@ -28,32 +26,28 @@ Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
 Plug 'leafgarland/typescript-vim'
 Plug 'ianks/vim-tsx'
-
-Plug 'christoomey/vim-system-copy'
-Plug 'elzr/vim-json'
-Plug 'tpope/vim-surround'
 Plug 'jparise/vim-graphql'
-" Plug 'neomake/neomake'
-Plug 'w0rp/ale'
-Plug 'prettier/vim-prettier'
+Plug 'elzr/vim-json'
 Plug 'davidhalter/jedi-vim'
 Plug 'octol/vim-cpp-enhanced-highlight'
 
+Plug 'christoomey/vim-system-copy'
+Plug 'tpope/vim-surround'
+Plug 'w0rp/ale'
+Plug 'prettier/vim-prettier'
+
 call plug#end()
 
-filetype plugin indent on    " required
+filetype plugin on
+filetype plugin indent on
 
 " General
 set encoding=utf8
 set number
 syntax enable
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
 set expandtab
+set ts=4 sw=4 sts=4
 set showcmd
-" set cursorline
-filetype indent on
 set wildmenu
 set showmatch
 set incsearch
@@ -70,9 +64,7 @@ set ignorecase
 set smartcase
 set lazyredraw
 set shellpipe=>
-" set swapfile
-" set dir=~/tmp
-au FileType qf wincmd J
+" au FileType qf wincmd J
 
 " Cursor Style
 if exists('$TMUX')
@@ -105,24 +97,8 @@ map <silent> <C-n> :NERDTreeToggle<CR> :NERDTreeMirror<CR>
 let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
 
-" Synastic
-" set statusline+=%#warningmsg#
-" set statusline+=%{SyntasticStatuslineFlag()}
-" set statusline+=%*
-" let g:syntastic_always_populate_loc_list = 1
-" let g:syntastic_python_pylint_args = "--load-plugins pylint_django"
-" let g:syntastic_auto_loc_list = 1
-" let g:syntastic_check_on_open = 1
-" let g:syntastic_check_on_wq = 0
-" let g:syntastic_mode_map = { 'mode': 'active', 'active_filetypes': [],'passive_filetypes': []  }
-" nnoremap <C-w>E :SyntasticCheck<CR> :SyntasticToggleMode<CR>
-
 " Tags
 nmap <F8> :TagbarToggle<CR>
-
-" ctrlp.vim
-" let g:ctrlp_custom_ignore = '\v[\/]\.(DS_Storegit|hg|svn|optimized|compiled|node_modules)$'
-" nnoremap <C-i>  :CtrlPLine<CR>
 
 " Airline
 let g:airline#extensions#tabline#enabled = 1
@@ -145,10 +121,9 @@ let g:ycm_seed_identifiers_with_syntax = 1 " Completion for programming language
 let g:ycm_complete_in_comments = 1 " Completion in comments
 let g:ycm_complete_in_strings = 1 " Completion in string
 let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
-" let g:loaded_youcompleteme = 0
 
 " CloseTag
-let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.jsx,*.js,*.tsx'
+let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.jsx,*.js,*.tsx,*.py'
 let g:closetag_xhtml_filenames = '*.xhtml,*.jsx'
 let g:closetag_emptyTags_caseSensitive = 1
 let g:closetag_shortcut = '>'
@@ -197,5 +172,9 @@ nnoremap <C-i>  :Line<CR>
 let g:ale_sign_error = '!'
 let g:ale_sign_warning = '?'
 
-" neomake
-" call neomake#configure#automake('w')
+" Indent
+
+" jedi
+let g:jedi#force_py_version = 3
+
+autocmd Filetype c setlocal ts=2 sw=2 expandtab
