@@ -5,6 +5,7 @@ call plug#begin('~/.vim/plugged')
 " Basic
 Plug 'altercation/vim-colors-solarized'
 Plug 'scrooloose/nerdtree'
+Plug 'scrooloose/nerdcommenter'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
@@ -77,15 +78,14 @@ else
   let &t_EI = "\<Esc>]50;CursorShape=0\x7"
 endif
 
-" Split Movement
+" Split Management
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
-
-" Tab Navigation
-nnoremap <C-t>     :tabnew<CR>
-inoremap <C-t>     <Esc>:tabnew<CR>
+nnoremap <C-S> :new<CR>
+nnoremap <C-V> :vnew<CR>
+nnoremap <C-W> :q<CR>
 
 " Command to move among tabs in Konsole-style
 map <A-l> gt
@@ -98,6 +98,7 @@ nnoremap <S-t>  :tabnew<CR>
 map <silent> <C-n> :NERDTreeToggle<CR> :NERDTreeMirror<CR>
 let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
+let NERDTreeMapOpenInTab='<C-t>'
 
 " Tags
 nmap <F8> :TagbarToggle<CR>
@@ -168,7 +169,12 @@ let g:fzf_colors =
   \ 'marker':  ['fg', 'Keyword'],
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
-nnoremap <C-i>  :Line<CR>
+let g:fzf_action = {
+  \ 'ctrl-s': 'split',
+  \ 'ctrl-v': 'vsplit',
+  \ 'ctrl-t': 'tabnew'
+  \ }
+nnoremap <Leader>b  :Buffers<CR>
 
 " Ale
 let g:ale_sign_error = '!'
