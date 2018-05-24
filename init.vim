@@ -1,27 +1,28 @@
 set shell=/bin/bash
 
-call plug#begin()
+call plug#begin('~/.vim/plugged')
 
-" let Vundle manage Vundle, required
-Plug 'VundleVim/Vundle.vim'
-Plug 'tpope/vim-fugitive'
-Plug 'airblade/vim-gitgutter'
-Plug 'scrooloose/nerdtree'
+" Basic
 Plug 'altercation/vim-colors-solarized'
+Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
 Plug 'yggdroot/indentline'
 Plug 'majutsushi/tagbar'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'mileszs/ack.vim'
 Plug 'valloric/youcompleteme'
 Plug 'alvan/vim-closetag'
 Plug 'jiangmiao/auto-pairs'
+Plug 'tpope/vim-surround'
+Plug 'christoomey/vim-system-copy'
 
+" Syntax
 Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
 Plug 'leafgarland/typescript-vim'
@@ -30,9 +31,10 @@ Plug 'jparise/vim-graphql'
 Plug 'elzr/vim-json'
 Plug 'davidhalter/jedi-vim'
 Plug 'octol/vim-cpp-enhanced-highlight'
+Plug 'vim-ruby/vim-ruby'
+Plug 'tpope/vim-rails'
 
-Plug 'christoomey/vim-system-copy'
-Plug 'tpope/vim-surround'
+" Formatting
 Plug 'w0rp/ale'
 Plug 'prettier/vim-prettier'
 
@@ -46,7 +48,7 @@ set encoding=utf8
 set number
 syntax enable
 set expandtab
-set ts=4 sw=4 sts=4
+set ts=2 sw=2 sts=2
 set showcmd
 set wildmenu
 set showmatch
@@ -172,9 +174,10 @@ nnoremap <C-i>  :Line<CR>
 let g:ale_sign_error = '!'
 let g:ale_sign_warning = '?'
 
-" Indent
-
 " jedi
 let g:jedi#force_py_version = 3
 
 autocmd Filetype c setlocal ts=2 sw=2 expandtab
+
+" Quickfix window size
+au FileType qf wincmd J
