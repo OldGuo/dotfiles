@@ -34,6 +34,11 @@ Plug 'davidhalter/jedi-vim'
 Plug 'octol/vim-cpp-enhanced-highlight'
 Plug 'vim-ruby/vim-ruby'
 Plug 'tpope/vim-rails'
+Plug 'vim-ruby/vim-ruby'
+Plug 'tpope/vim-rbenv'
+Plug 'chrisbra/Colorizer'
+Plug 'flowtype/vim-flow'
+Plug 'kchmck/vim-coffee-script'
 
 " Formatting
 Plug 'w0rp/ale'
@@ -67,6 +72,7 @@ set ignorecase
 set smartcase
 set lazyredraw
 set shellpipe=>
+set timeoutlen=1000 ttimeoutlen=0
 " au FileType qf wincmd J
 
 " Cursor Style
@@ -78,6 +84,11 @@ else
   let &t_EI = "\<Esc>]50;CursorShape=0\x7"
 endif
 
+" Highlight
+nnoremap <Leader><Esc> :noh<Cr>
+" highlight last inserted text
+nnoremap gV `[v`]
+
 " Split Management
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
@@ -85,7 +96,9 @@ nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 nnoremap <C-S> :new<CR>
 nnoremap <C-V> :vnew<CR>
-nnoremap <C-W> :q<CR>
+set splitright
+set splitbelow
+autocmd VimResized * wincmd =
 
 " Command to move among tabs in Konsole-style
 map <A-l> gt
@@ -99,6 +112,7 @@ map <silent> <C-n> :NERDTreeToggle<CR> :NERDTreeMirror<CR>
 let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
 let NERDTreeMapOpenInTab='<C-t>'
+nnoremap <leader>f :NERDTreeFind<CR>
 
 " Tags
 nmap <F8> :TagbarToggle<CR>
@@ -147,12 +161,13 @@ let g:indentLine_enabled = 1
 
 " Ack
 cnoreabbrev Ack Ack!
-nnoremap <Leader>a :Ack!<Space>
+nnoremap <Leader>a :Ack! -i<Space>
 if executable('ag')
   let g:ackprg = 'ag --vimgrep'
 endif
 
 " fzf
+let $FZF_DEFAULT_COMMAND = 'ag -g ""'
 set rtp+=/usr/local/opt/fzf
 nmap ; :FZF<CR>
 let g:fzf_colors =
@@ -174,11 +189,23 @@ let g:fzf_action = {
   \ 'ctrl-v': 'vsplit',
   \ 'ctrl-t': 'tabnew'
   \ }
+nnoremap <Leader>l  :BLines<CR>
 nnoremap <Leader>b  :Buffers<CR>
+nnoremap <Leader>% :let @*=@%<CR>
 
 " Ale
 let g:ale_sign_error = '!'
 let g:ale_sign_warning = '?'
+let g:ale_ruby_rubocop_executable = 'bundle'
+let g:ale_linters = {
+\  'javascript': ['flow', 'eslint'],
+\}
+let g:ale_fixers = {
+\   'javascript': ['eslint'],
+\}
+" if you want to fix files automatically on save.
+" This is off by default.
+let g:ale_fix_on_save = 1
 
 " jedi
 let g:jedi#force_py_version = 3
@@ -187,3 +214,5 @@ autocmd Filetype c setlocal ts=2 sw=2 expandtab
 
 " Quickfix window size
 au FileType qf wincmd J
+
+set clipboard+=unnamedplus
