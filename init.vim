@@ -19,7 +19,9 @@ Plug 'christoomey/vim-tmux-navigator'
 Plug 'mileszs/ack.vim'
 Plug 'valloric/youcompleteme'
 Plug 'alvan/vim-closetag'
-Plug 'jiangmiao/auto-pairs'
+" Plug 'jiangmiao/auto-pairs'
+" Plug 'Townk/vim-autoclose'
+Plug 'Raimondi/delimitMate'
 Plug 'tpope/vim-surround'
 Plug 'christoomey/vim-system-copy'
 
@@ -37,8 +39,9 @@ Plug 'tpope/vim-rails'
 Plug 'vim-ruby/vim-ruby'
 Plug 'tpope/vim-rbenv'
 Plug 'chrisbra/Colorizer'
-Plug 'flowtype/vim-flow'
+" Plug 'flowtype/vim-flow'
 Plug 'kchmck/vim-coffee-script'
+Plug 'fatih/vim-go'
 
 " Formatting
 Plug 'w0rp/ale'
@@ -73,6 +76,7 @@ set smartcase
 set lazyredraw
 set shellpipe=>
 set timeoutlen=1000 ttimeoutlen=0
+set title
 " au FileType qf wincmd J
 
 " Cursor Style
@@ -94,15 +98,15 @@ nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
-nnoremap <C-S> :new<CR>
-nnoremap <C-V> :vnew<CR>
+nnoremap <Leader>s :new<CR>
+nnoremap <Leader>v :vnew<CR>
 set splitright
 set splitbelow
 autocmd VimResized * wincmd =
 
 " Command to move among tabs in Konsole-style
 map <A-l> gt
-map <A-h> gT
+map <A-h> g
 nnoremap <S-l>  :tabnext<CR>
 nnoremap <S-h>  :tabprev<CR>
 nnoremap <S-t>  :tabnew<CR>
@@ -169,7 +173,7 @@ endif
 " fzf
 let $FZF_DEFAULT_COMMAND = 'ag -g ""'
 set rtp+=/usr/local/opt/fzf
-nmap ; :FZF<CR>
+nmap <C-p> :FZF<CR>
 let g:fzf_colors =
 \ { 'fg':      ['fg', 'Normal'],
   \ 'bg':      ['bg', 'Normal'],
@@ -201,11 +205,17 @@ let g:ale_linters = {
 \  'javascript': ['flow', 'eslint'],
 \}
 let g:ale_fixers = {
-\   'javascript': ['eslint'],
+\   'javascript': ['eslint', 'prettier'],
 \}
 " if you want to fix files automatically on save.
 " This is off by default.
 let g:ale_fix_on_save = 1
+let g:ale_set_quickfix = 0
+
+" Flow
+let g:flow#typecheck = 1
+let g:flow#autoclose = 1
+let g:flow#showquickfix = 0
 
 " jedi
 let g:jedi#force_py_version = 3
@@ -214,5 +224,13 @@ autocmd Filetype c setlocal ts=2 sw=2 expandtab
 
 " Quickfix window size
 au FileType qf wincmd J
+autocmd FileType qf setlocal wrap
 
 set clipboard+=unnamedplus
+
+" AutoClose
+let g:AutoClosePumvisible = {"ENTER": "", "ESC": ""}
+
+" DelimitMate
+let g:closetag_filenames = "*.xml,*.html,*.xhtml,*.phtml,*.php"
+au FileType xml,html,phtml,php,xhtml,js let b:delimitMate_matchpairs = "(:),[:],{:}"
