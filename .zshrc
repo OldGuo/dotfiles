@@ -105,3 +105,5 @@ source $ZSH/oh-my-zsh.sh
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(direnv hook zsh)"
+
+[ -s "/Users/youngguo/.scm_breeze/scm_breeze.sh" ] && source "/Users/youngguo/.scm_breeze/scm_breeze.sh"
