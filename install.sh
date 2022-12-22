@@ -23,6 +23,9 @@ brew install tmux
 echo "applying tmux config"
 cp .tmux.conf ~
 
+# vscode bindings
+cp keybindings.json ~/Library/Application\ Support/Code/User/keybindings.json
+
 # scm breeze
 git clone https://github.com/scmbreeze/scm_breeze.git ~/.scm_breeze
 ~/.scm_breeze/install.sh
