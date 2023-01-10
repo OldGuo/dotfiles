@@ -29,6 +29,7 @@ cp keybindings.json ~/Library/Application\ Support/Code/User/keybindings.json
 cp settings.json ~/Library/Application\ Support/Code/User/settings.json
 
 # scm breeze
+echo "installing scm breeze (git plugin)"
 git clone https://github.com/scmbreeze/scm_breeze.git ~/.scm_breeze
 ~/.scm_breeze/install.sh
 
