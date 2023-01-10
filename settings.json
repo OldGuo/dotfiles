@@ -1,0 +1,7 @@
+{
+    "workbench.colorTheme": "Solarized Dark",
+    "window.zoomLevel": 2,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+}
