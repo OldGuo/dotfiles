@@ -10,13 +10,13 @@ plugins=(
   zsh-autosuggestions
 )
 
-# fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-eval "$(direnv hook zsh)"
-
 # scm breeze
 autoload -Uz compinit
 compinit
 [ -s "/Users/young/.scm_breeze/scm_breeze.sh" ] && source "/Users/young/.scm_breeze/scm_breeze.sh"
 
 source $ZSH/oh-my-zsh.sh
+
+# fzf
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+eval "$(direnv hook zsh)"
