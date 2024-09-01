@@ -2,6 +2,14 @@
     "workbench.colorTheme": "Solarized Dark",
     "window.zoomLevel": 2,
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
+        "source.fixAll.eslint": "explicit"
+    },
+    "workbench.sideBar.location": "right",
+    "workbench.activityBar.location": "top",
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
 }
