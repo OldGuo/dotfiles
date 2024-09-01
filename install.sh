@@ -15,18 +15,18 @@ git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-m
 brew install fzf
 $(brew --prefix)/opt/fzf/install
 echo "applying zsh config"
-cp .zshrc ~
+ln -s $(pwd)/.zshrc ~
 
 # tmux
 echo "installing tmux"
 brew install tmux
 echo "applying tmux config"
-cp .tmux.conf ~
+ln -s $(pwd)/.tmux.conf ~
 
 # vscode
 echo "copying vscode configs"
-cp keybindings.json ~/Library/Application\ Support/Code/User/keybindings.json
-cp settings.json ~/Library/Application\ Support/Code/User/settings.json
+ln -s $(pwd)/settings.json ~/Library/Application\ Support/Code/User/settings.json
+ln -s $(pwd)/keybindings.json ~/Library/Application\ Support/Code/User/keybindings.json
 
 # scm breeze
 echo "installing scm breeze (git plugin)"
