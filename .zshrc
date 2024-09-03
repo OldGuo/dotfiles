@@ -24,3 +24,4 @@ eval "$(direnv hook zsh)"
 # git aliases
 alias gcomm="git commit -m"
 alias gcom="git commit"
+alias vim="nvim"

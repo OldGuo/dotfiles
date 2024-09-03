@@ -36,4 +36,8 @@ echo "installing scm breeze (git plugin)"
 git clone https://github.com/scmbreeze/scm_breeze.git ~/.scm_breeze
 ~/.scm_breeze/install.sh
 
+# neovim
+brew install neovim
+ln -s $(pwd)/neovim/.config/nvim ~/.config/nvim
+
 echo "Done"
