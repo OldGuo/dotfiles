@@ -14,5 +14,5 @@
     },
     "search.mode": "newEditor",
     "vim.smartRelativeLine": true,
-    "editor.wordWrap": "on",
+    "editor.wordWrap": "on"
 }

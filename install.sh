@@ -38,6 +38,8 @@ git clone https://github.com/scmbreeze/scm_breeze.git ~/.scm_breeze
 
 # neovim
 brew install neovim
+brew install ripgrep
+brew install fd
 ln -s $(pwd)/neovim/.config/nvim ~/.config/nvim
 
 echo "Done"
