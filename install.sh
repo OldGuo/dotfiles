@@ -17,6 +17,9 @@ $(brew --prefix)/opt/fzf/install
 echo "applying zsh config"
 ln -s $(pwd)/.zshrc ~
 
+# weztrem
+ln -s $(pwd)/.wezterm.lua ~
+
 # tmux
 echo "installing tmux"
 brew install tmux
