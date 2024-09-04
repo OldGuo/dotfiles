@@ -21,7 +21,12 @@ source $ZSH/oh-my-zsh.sh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(direnv hook zsh)"
 
+# git
+export GIT_EDITOR=nvim
+
 # git aliases
 alias gcomm="git commit -m"
 alias gcom="git commit"
+alias gcoma="git commit --amend"
 alias vim="nvim"
+
