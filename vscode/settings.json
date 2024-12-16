@@ -14,5 +14,8 @@
     },
     "search.mode": "newEditor",
     "vim.smartRelativeLine": true,
-    "editor.wordWrap": "on"
+    "editor.wordWrap": "on",
+    "workbench.editor.wrapTabs": true,
+    "editor.unicodeHighlight.invisibleCharacters": false,
+    "git.openRepositoryInParentFolders": "never"
 }
