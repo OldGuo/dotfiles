@@ -1,7 +1,7 @@
 {
     // Keyboard settings
     "keyboard.dispatch": "keyCode",
-  
+
     // Editor settings
     "editor.lineNumbers": "relative",
     "editor.tabSize": 2,
@@ -10,7 +10,7 @@
     "editor.stickyScroll.enabled": true,
     "editor.minimap.enabled": false,
     "editor.fontLigatures": true,
-  
+
     // Workbench settings
     "workbench.editor.wrapTabs": true,
     "workbench.tree.indent": 12,
@@ -23,12 +23,12 @@
     "workbench.editor.revealIfOpen": true,
     "workbench.iconTheme": "vscode-icons",
     "workbench.sideBar.location": "right",
-  
+
     // Terminal settings
     "terminal.integrated.tabStopWidth": 2,
     "terminal.integrated.sendKeybindingsToShell": true,
     "terminal.integrated.scrollback": 1000,
-  
+
     // Vim settings
     "vim.handleKeys": {
       "<C-f>": false
@@ -92,7 +92,7 @@
         "silent": true
       }
     ],
-  
+
     // Git settings
     "gitlens.views.repositories.autoRefresh": true,
     "git.autorefresh": true,
@@ -113,7 +113,7 @@
       "searchAndCompare": false,
       "launchpad": false
     },
-  
+
     // Files settings
     "files.trimTrailingWhitespace": true,
     "files.watcherExclude": {
@@ -121,20 +121,20 @@
       "**/.git/subtree-cache/**": true,
       "**/node_modules/*/**": true
     },
-  
+
     // CMake settings
     "cmake.showOptionsMovedNotification": false,
     "cmake.pinnedCommands": [
       "workbench.action.tasks.configureTaskRunner",
       "workbench.action.tasks.runTask"
     ],
-  
+
     // Python settings
     "python.languageServer": "Pylance",
     "python.analysis.exclude": [
       "**/bazel-*"
     ],
-  
+
     // Miscellaneous settings
     "window.zoomLevel": 1,
     "window.customTitleBarVisibility": "auto",
