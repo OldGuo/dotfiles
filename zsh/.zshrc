@@ -3,6 +3,7 @@ export ZSH="/Users/young/.oh-my-zsh"
 
 # theme
 ZSH_THEME="amuse"
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=10"
 
 # basic plugins
 plugins=(
