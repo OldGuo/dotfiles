@@ -16,10 +16,12 @@ brew install fzf
 $(brew --prefix)/opt/fzf/install
 echo "applying zsh config"
 ln -s $(pwd)/zsh/.zshrc ~
+chsh -s /usr/bin/zsh
 
-# weztrem
-echo "applying wezterm config"
-ln -s $(pwd)/wezterm/.wezterm.lua ~
+# ghostty
+echo "applying ghostty config"
+mkdir -p ~/.config/ghostty
+ln -s $(pwd)/ghostty/config ~/.config/ghostty/config
 
 # tmux
 echo "installing tmux"
