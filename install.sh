@@ -71,7 +71,11 @@ brew_install fzf
 $(brew --prefix)/opt/fzf/install
 echo "applying zsh config"
 link_file "$REPO_ROOT/zsh/.zshrc" "$HOME/.zshrc"
-chsh -s /usr/bin/zsh
+target_shell="$BREW_PREFIX/bin/zsh"
+target_shell="$(brew --prefix)/bin/zsh"
+if [ -x "$target_shell" ] && [ "$SHELL" != "$target_shell" ]; then
+  chsh -s "$target_shell"
+fi
 
 # ghostty
 echo "applying ghostty config"
