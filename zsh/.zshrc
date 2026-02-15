@@ -1,5 +1,5 @@
 # zsh
-export ZSH="/Users/young/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 # theme
 ZSH_THEME="amuse"
@@ -14,7 +14,7 @@ plugins=(
 # scm breeze
 autoload -Uz compinit
 compinit
-[ -s "/Users/young/.scm_breeze/scm_breeze.sh" ] && source "/Users/young/.scm_breeze/scm_breeze.sh"
+[ -s "$HOME/.scm_breeze/scm_breeze.sh" ] && source "$HOME/.scm_breeze/scm_breeze.sh"
 
 source $ZSH/oh-my-zsh.sh
 

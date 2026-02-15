@@ -144,5 +144,7 @@
     "chat.editing.alwaysSaveWithGeneratedChanges": true,
     "diffEditor.ignoreTrimWhitespace": true,
     "references.preferredLocation": "view",
-    "chat.editing.confirmEditRequestRetry": false
+    "chat.editing.confirmEditRequestRetry": false,
+    // Optional, machine-local custom CSS import.
+    "vscode_custom_css.imports": [],
   }
