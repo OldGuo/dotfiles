@@ -56,25 +56,32 @@ echo "installing homebrew"
 if command -v brew >/dev/null 2>&1; then
   echo "homebrew already installed"
 else
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
 # zsh
 echo "installing zsh"
 brew_install zsh
 echo "installing oh my zsh"
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+if [ -d "$HOME/.oh-my-zsh" ]; then
+  echo "oh my zsh already installed"
+else
+  RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+fi
 echo "installing zsh plugins"
 brew_install direnv
 clone_if_missing https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
 brew_install fzf
-$(brew --prefix)/opt/fzf/install
+"$(brew --prefix)/opt/fzf/install" --all --no-update-rc
 echo "applying zsh config"
 link_file "$REPO_ROOT/zsh/.zshrc" "$HOME/.zshrc"
-target_shell="$BREW_PREFIX/bin/zsh"
 target_shell="$(brew --prefix)/bin/zsh"
 if [ -x "$target_shell" ] && [ "$SHELL" != "$target_shell" ]; then
-  chsh -s "$target_shell"
+  if [ "${APPLY_LOGIN_SHELL:-0}" = "1" ]; then
+    chsh -s "$target_shell"
+  else
+    echo "skipping chsh (set APPLY_LOGIN_SHELL=1 to apply $target_shell)"
+  fi
 fi
 
 # ghostty
