@@ -46,6 +46,11 @@ link_file() {
   ln -s "$source_path" "$target_path"
 }
 
+bootstrap_packer() {
+  packer_dir="$HOME/.local/share/nvim/site/pack/packer/start/packer.nvim"
+  clone_if_missing https://github.com/wbthomason/packer.nvim "$packer_dir"
+}
+
 # homebrew
 echo "installing homebrew"
 if command -v brew >/dev/null 2>&1; then
@@ -94,5 +99,9 @@ brew_install neovim
 brew_install ripgrep
 brew_install fd
 link_file "$REPO_ROOT/neovim/.config/nvim" "$HOME/.config/nvim"
+bootstrap_packer
+echo "syncing neovim plugins"
+nvim --headless -c "autocmd User PackerComplete quitall" -c "PackerSync"
+nvim --headless -c "TSUpdateSync" -c "quitall"
 
 echo "Done"
