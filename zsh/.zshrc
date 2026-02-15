@@ -31,3 +31,4 @@ alias gcom="git commit"
 alias gcoma="git commit --amend"
 alias vim="nvim"
 
+export PATH="$HOME/.local/bin:$PATH"

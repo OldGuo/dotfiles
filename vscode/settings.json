@@ -22,7 +22,6 @@
     "workbench.colorTheme": "Solarized Dark",
     "workbench.editor.revealIfOpen": true,
     "workbench.iconTheme": "vscode-icons",
-    "workbench.sideBar.location": "right",
 
     // Terminal settings
     "terminal.integrated.tabStopWidth": 2,
