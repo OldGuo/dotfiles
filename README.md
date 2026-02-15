@@ -17,12 +17,12 @@ Personal macOS dotfiles bootstrap for:
 ```sh
 git clone <this-repo>
 cd dotfiles
-./install.sh
+python3 install.py
 ```
 
 Optional: set login shell during install.
 ```sh
-APPLY_LOGIN_SHELL=1 ./install.sh
+APPLY_LOGIN_SHELL=1 python3 install.py
 ```
 
 ## What Install Does
