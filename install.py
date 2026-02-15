@@ -169,7 +169,18 @@ def install_neovim():
     link_file(REPO_ROOT / "neovim/.config/nvim", HOME / ".config/nvim")
     bootstrap_packer()
     print("syncing neovim plugins")
-    run(["nvim", "--headless", "-c", "autocmd User PackerComplete quitall", "-c", "PackerSync"])
+    run(
+        [
+            "nvim",
+            "--headless",
+            "-c",
+            "lua require('oldguo.packer')",
+            "-c",
+            "autocmd User PackerComplete quitall",
+            "-c",
+            "lua require('packer').sync()",
+        ]
+    )
     run(["nvim", "--headless", "-c", "TSUpdateSync", "-c", "quitall"])
 
 
