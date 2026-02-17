@@ -49,8 +49,8 @@ local function save_profiles(threshold)
 end
 
 time([[Luarocks path setup]], true)
-local package_path_str = "/Users/young/.cache/nvim/packer_hererocks/2.1.1734355927/share/lua/5.1/?.lua;/Users/young/.cache/nvim/packer_hererocks/2.1.1734355927/share/lua/5.1/?/init.lua;/Users/young/.cache/nvim/packer_hererocks/2.1.1734355927/lib/luarocks/rocks-5.1/?.lua;/Users/young/.cache/nvim/packer_hererocks/2.1.1734355927/lib/luarocks/rocks-5.1/?/init.lua"
-local install_cpath_pattern = "/Users/young/.cache/nvim/packer_hererocks/2.1.1734355927/lib/lua/5.1/?.so"
+local package_path_str = "/home/young/.cache/nvim/packer_hererocks/2.1.1713484068/share/lua/5.1/?.lua;/home/young/.cache/nvim/packer_hererocks/2.1.1713484068/share/lua/5.1/?/init.lua;/home/young/.cache/nvim/packer_hererocks/2.1.1713484068/lib/luarocks/rocks-5.1/?.lua;/home/young/.cache/nvim/packer_hererocks/2.1.1713484068/lib/luarocks/rocks-5.1/?/init.lua"
+local install_cpath_pattern = "/home/young/.cache/nvim/packer_hererocks/2.1.1713484068/lib/lua/5.1/?.so"
 if not string.find(package.path, package_path_str, 1, true) then
   package.path = package.path .. ';' .. package_path_str
 end
@@ -76,53 +76,53 @@ time([[Defining packer_plugins]], true)
 _G.packer_plugins = {
   ["bufferline.nvim"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/bufferline.nvim",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/bufferline.nvim",
     url = "https://github.com/akinsho/bufferline.nvim"
   },
   ["cmp-nvim-lsp"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/cmp-nvim-lsp",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/cmp-nvim-lsp",
     url = "https://github.com/hrsh7th/cmp-nvim-lsp"
   },
   ["indent-blankline.nvim"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/indent-blankline.nvim",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/indent-blankline.nvim",
     url = "https://github.com/lukas-reineke/indent-blankline.nvim"
   },
   ["nvim-cmp"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/nvim-cmp",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/nvim-cmp",
     url = "https://github.com/hrsh7th/nvim-cmp"
   },
   ["nvim-lspconfig"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/nvim-lspconfig",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/nvim-lspconfig",
     url = "https://github.com/neovim/nvim-lspconfig"
   },
   ["nvim-treesitter"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/nvim-treesitter",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/nvim-treesitter",
     url = "https://github.com/nvim-treesitter/nvim-treesitter"
   },
   ["packer.nvim"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/packer.nvim",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/packer.nvim",
     url = "https://github.com/wbthomason/packer.nvim"
   },
   ["plenary.nvim"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/plenary.nvim",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/plenary.nvim",
     url = "https://github.com/nvim-lua/plenary.nvim"
   },
   ["solarized.nvim"] = {
     config = { "\27LJ\2\n³\1\0\0\4\0\n\0\0246\0\0\0009\0\1\0'\1\3\0=\1\2\0006\0\4\0'\2\5\0B\0\2\0026\1\0\0009\1\1\1+\2\2\0=\2\6\0016\1\0\0009\1\1\1'\2\3\0=\2\2\0019\1\a\0004\3\0\0B\1\2\0016\1\0\0009\1\b\0019\1\t\1'\3\5\0B\1\2\1K\0\1\0\16colorscheme\bcmd\nsetup\18termguicolors\14solarized\frequire\tdark\15background\6o\bvim\0" },
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/solarized.nvim",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/solarized.nvim",
     url = "https://github.com/maxmx03/solarized.nvim"
   },
   ["telescope.nvim"] = {
     loaded = true,
-    path = "/Users/young/.local/share/nvim/site/pack/packer/start/telescope.nvim",
+    path = "/home/young/.local/share/nvim/site/pack/packer/start/telescope.nvim",
     url = "https://github.com/nvim-telescope/telescope.nvim"
   }
 }

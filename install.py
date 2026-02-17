@@ -22,15 +22,22 @@ def command_exists(cmd):
 
 
 def brew_prefix():
+    if not command_exists("brew"):
+        return None
     return subprocess.check_output(["brew", "--prefix"], text=True).strip()
 
 
 def brew_install(pkg):
+    if not command_exists("brew"):
+        print(f"skipping {pkg}: homebrew is not available")
+        return False
     result = subprocess.run(["brew", "list", pkg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if result.returncode == 0:
         print(f"{pkg} already installed")
+        return True
     else:
         run(["brew", "install", pkg])
+        return True
 
 
 def clone_if_missing(repo_url, target_dir):
@@ -73,22 +80,33 @@ def install_homebrew():
     print("installing homebrew")
     if command_exists("brew"):
         print("homebrew already installed")
-        return
+        return True
+    if sys.platform.startswith("linux") and os.environ.get("INSTALL_HOMEBREW", "0") != "1":
+        print("skipping homebrew bootstrap on linux (set INSTALL_HOMEBREW=1 to force install)")
+        return False
     env = os.environ.copy()
     env["NONINTERACTIVE"] = "1"
-    run(
-        [
-            "/bin/bash",
-            "-c",
-            "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)",
-        ],
-        env=env,
-    )
+    try:
+        run(
+            [
+                "/bin/bash",
+                "-c",
+                "curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash",
+            ],
+            env=env,
+        )
+    except subprocess.CalledProcessError:
+        print("warning: unable to install homebrew; continuing without brew-managed packages")
+        return False
+    return command_exists("brew")
 
 
 def install_zsh_stack():
     print("installing zsh")
     brew_install("zsh")
+    if not command_exists("zsh"):
+        print("skipping zsh setup: zsh is not installed")
+        return
 
     print("installing oh my zsh")
     oh_my_zsh_dir = HOME / ".oh-my-zsh"
@@ -103,7 +121,7 @@ def install_zsh_stack():
             [
                 "sh",
                 "-c",
-                "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)",
+                "curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh",
             ],
             env=env,
         )
@@ -116,16 +134,22 @@ def install_zsh_stack():
         Path(zsh_custom) / "plugins/zsh-autosuggestions",
     )
 
-    brew_install("fzf")
-    fzf_install = Path(brew_prefix()) / "opt/fzf/install"
-    run([str(fzf_install), "--all", "--no-update-rc"])
+    if brew_install("fzf"):
+        prefix = brew_prefix()
+        if prefix:
+            fzf_install = Path(prefix) / "opt/fzf/install"
+            if fzf_install.exists():
+                run([str(fzf_install), "--all", "--no-update-rc"])
+            else:
+                print(f"skipping fzf installer (not found at {fzf_install})")
 
     print("applying zsh config")
     link_file(REPO_ROOT / "zsh/.zshrc", HOME / ".zshrc")
 
-    target_shell = Path(brew_prefix()) / "bin/zsh"
+    zsh_path = shutil.which("zsh")
+    target_shell = Path(zsh_path) if zsh_path else None
     current_shell = os.environ.get("SHELL", "")
-    if target_shell.exists() and current_shell != str(target_shell):
+    if target_shell and target_shell.exists() and current_shell != str(target_shell):
         if os.environ.get("APPLY_LOGIN_SHELL", "0") == "1":
             run(["chsh", "-s", str(target_shell)])
         else:
@@ -146,7 +170,10 @@ def install_tmux():
 
 def install_vscode():
     print("copying vscode configs")
-    vscode_user_dir = HOME / "Library/Application Support/Code/User"
+    if sys.platform == "darwin":
+        vscode_user_dir = HOME / "Library/Application Support/Code/User"
+    else:
+        vscode_user_dir = HOME / ".config/Code/User"
     link_file(REPO_ROOT / "vscode/settings.json", vscode_user_dir / "settings.json")
     link_file(REPO_ROOT / "vscode/keybindings.json", vscode_user_dir / "keybindings.json")
 
@@ -166,6 +193,9 @@ def install_neovim():
     brew_install("neovim")
     brew_install("ripgrep")
     brew_install("fd")
+    if not command_exists("nvim"):
+        print("skipping neovim config: nvim is not installed")
+        return
     link_file(REPO_ROOT / "neovim/.config/nvim", HOME / ".config/nvim")
     bootstrap_packer()
     print("syncing neovim plugins")

@@ -14,12 +14,6 @@ return require('packer').startup(function(use)
   }
 
   use {
-    'nvim-telescope/telescope.nvim', tag = '0.1.8',
-    -- or                              , branch = '0.1.x',
-    dependencies = { 'nvim-lua/plenary.nvim' }
-  }
-
-  use {
     'maxmx03/solarized.nvim',
     config = function()
       vim.o.background = 'dark'
