@@ -32,7 +32,7 @@ APPLY_LOGIN_SHELL=1 python3 install.py
 - Installs `scm_breeze`
 - Symlinks configs from this repo into `$HOME`
 - Applies Codex CLI config (`~/.codex/config.toml`)
-- Bootstraps Neovim plugin manager and runs plugin/tree-sitter sync
+- Bootstraps `lazy.nvim` and runs plugin/tree-sitter sync
 
 The script is designed to be rerunnable and backs up pre-existing target files before replacing them with symlinks.
 

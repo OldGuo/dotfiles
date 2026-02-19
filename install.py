@@ -72,11 +72,6 @@ def link_file(source_path, target_path):
     target.symlink_to(source)
 
 
-def bootstrap_packer():
-    packer_dir = HOME / ".local/share/nvim/site/pack/packer/start/packer.nvim"
-    clone_if_missing("https://github.com/wbthomason/packer.nvim", packer_dir)
-
-
 def install_homebrew():
     print("installing homebrew")
     if command_exists("brew"):
@@ -212,20 +207,8 @@ def install_neovim():
         print("skipping neovim config: nvim is not installed")
         return
     link_file(REPO_ROOT / "neovim/.config/nvim", HOME / ".config/nvim")
-    bootstrap_packer()
     print("syncing neovim plugins")
-    run(
-        [
-            "nvim",
-            "--headless",
-            "-c",
-            "lua require('youngxguo.packer')",
-            "-c",
-            "autocmd User PackerComplete quitall",
-            "-c",
-            "lua require('packer').sync()",
-        ]
-    )
+    run(["nvim", "--headless", "+lua require('lazy').sync({wait = true})", "+qa"])
     run(["nvim", "--headless", "-c", "TSUpdateSync", "-c", "quitall"])
 
 
