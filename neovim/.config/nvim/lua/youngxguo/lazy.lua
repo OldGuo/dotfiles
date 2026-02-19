@@ -41,6 +41,7 @@ require("lazy").setup({
     },
   },
   { "neovim/nvim-lspconfig" },
+  { "j-hui/fidget.nvim", opts = {} },
   { "hrsh7th/cmp-nvim-lsp" },
   { "hrsh7th/nvim-cmp" },
   { "lukas-reineke/indent-blankline.nvim" },
@@ -64,6 +65,19 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {
       use_icons = true,
+    },
+  },
+  {
+    "pwntester/octo.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope.nvim",
+      "nvim-tree/nvim-web-devicons",
+    },
+    cmd = "Octo",
+    opts = {
+      default_merge_method = "squash",
+      picker = "telescope",
     },
   },
 })
