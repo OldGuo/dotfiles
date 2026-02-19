@@ -50,13 +50,5 @@ The script is designed to be rerunnable and backs up pre-existing target files b
   - `ls -l ~/.codex/config.toml`
 
 ## Commit Message Rules (Codex/AI)
-This repo includes a commit template and commit-msg hook to force detailed commit bodies.
-
-Run once in this repo:
-```sh
-git config core.hooksPath .githooks
-git config commit.template codex/commit-template.txt
-chmod +x .githooks/commit-msg
-```
-
-Rules and example format: `codex/COMMIT_RULES.md`
+Commit message guidance for Codex lives in `codex/COMMIT_RULES.md`.
+These are style rules only (no Git hook/template enforcement).

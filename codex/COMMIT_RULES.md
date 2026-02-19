@@ -1,6 +1,7 @@
 # Codex/AI Commit Rules
 
-These rules apply to commits created by AI agents and humans in this repo.
+These are guidance rules for Codex-generated commits in this repo.
+They are not enforced by Git hooks or commit templates.
 
 ## Format
 - Use a concise subject line: `type(scope): summary`
