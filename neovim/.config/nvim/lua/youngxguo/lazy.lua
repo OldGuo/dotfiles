@@ -15,7 +15,28 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   {
     "nvim-telescope/telescope.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope-frecency.nvim",
+    },
+    config = function()
+      require("telescope").setup({
+        defaults = {
+          sorting_strategy = "ascending",
+          layout_config = {
+            prompt_position = "top",
+          },
+        },
+        extensions = {
+          frecency = {
+            workspace_scan_cmd = { "find", ".", "-type", "f" },
+            default_workspace = "CWD",
+            db_safe_mode = false,
+          },
+        },
+      })
+      require("telescope").load_extension("frecency")
+    end,
   },
   {
     "maxmx03/solarized.nvim",
@@ -42,10 +63,24 @@ require("lazy").setup({
   },
   { "neovim/nvim-lspconfig" },
   { "j-hui/fidget.nvim", opts = {} },
-  { "hrsh7th/cmp-nvim-lsp" },
-  { "hrsh7th/nvim-cmp" },
+  {
+    "saghen/blink.cmp",
+    version = "1.*",
+    opts = {
+      keymap = { preset = "default" },
+      completion = {
+        documentation = { auto_show = true },
+      },
+      cmdline = {
+        enabled = true,
+      },
+      sources = {
+        default = { "lsp", "path", "buffer" },
+      },
+    },
+  },
   { "lukas-reineke/indent-blankline.nvim" },
-  { "akinsho/bufferline.nvim" },
+
   { "lewis6991/gitsigns.nvim" },
   { "nvim-tree/nvim-web-devicons" },
   { "christoomey/vim-tmux-navigator" },
@@ -65,6 +100,29 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {
       use_icons = true,
+    },
+  },
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+    },
+    opts = {
+      cmdline = {
+        view = "cmdline_popup",
+      },
+      messages = { enabled = false },
+      popupmenu = { enabled = false },
+      notify = { enabled = false },
+      lsp = {
+        override = {
+          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+          ["vim.lsp.util.stylize_markdown"] = true,
+          ["cmp.entry.get_documentation"] = true,
+        },
+        progress = { enabled = false },
+      },
     },
   },
   {
