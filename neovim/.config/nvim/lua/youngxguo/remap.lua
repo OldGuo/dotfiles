@@ -12,3 +12,4 @@ vim.api.nvim_set_keymap("n", '<leader>"', ":split<CR>", { noremap = true, silent
 vim.keymap.set("n", "<leader>gd", "<cmd>DiffviewOpen<CR>", { silent = true })
 vim.keymap.set("n", "<leader>gD", "<cmd>DiffviewClose<CR>", { silent = true })
 vim.keymap.set("n", "<leader>gs", "<cmd>Gdiffsplit<CR>", { silent = true })
+vim.keymap.set("n", "<leader>gg", "<cmd>Neogit<CR>", { silent = true })

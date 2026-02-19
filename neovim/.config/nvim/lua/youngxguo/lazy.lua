@@ -39,7 +39,18 @@ require("lazy").setup({
   { "akinsho/bufferline.nvim" },
   { "lewis6991/gitsigns.nvim" },
   { "nvim-tree/nvim-web-devicons" },
+  { "christoomey/vim-tmux-navigator" },
   { "tpope/vim-fugitive" },
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "sindrets/diffview.nvim",
+      "nvim-telescope/telescope.nvim",
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = true,
+  },
   {
     "sindrets/diffview.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
