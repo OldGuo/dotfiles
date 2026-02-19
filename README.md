@@ -48,3 +48,15 @@ The script is designed to be rerunnable and backs up pre-existing target files b
   - `ls -l ~/.config/ghostty/config`
   - `ls -l ~/Library/Application\\ Support/Code/User/settings.json`
   - `ls -l ~/.codex/config.toml`
+
+## Commit Message Rules (Codex/AI)
+This repo includes a commit template and commit-msg hook to force detailed commit bodies.
+
+Run once in this repo:
+```sh
+git config core.hooksPath .githooks
+git config commit.template codex/commit-template.txt
+chmod +x .githooks/commit-msg
+```
+
+Rules and example format: `codex/COMMIT_RULES.md`

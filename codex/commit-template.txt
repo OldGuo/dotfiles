@@ -1,0 +1,13 @@
+<type>(<scope>): <summary>
+
+Context:
+- <why>
+
+Changes:
+- <what changed>
+
+Validation:
+- <tests run>
+
+Notes:
+- <follow-ups, optional>
