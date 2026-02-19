@@ -199,6 +199,11 @@ def install_scm_breeze():
     run(["bash", "-lc", cmd])
 
 
+def install_codex():
+    print("applying codex config")
+    link_file(REPO_ROOT / "codex/config.toml", HOME / ".codex/config.toml")
+
+
 def install_neovim():
     brew_install("neovim")
     brew_install("ripgrep")
@@ -230,6 +235,7 @@ def main():
     install_ghostty()
     install_tmux()
     install_vscode()
+    install_codex()
     install_scm_breeze()
     install_neovim()
     print("Done")
