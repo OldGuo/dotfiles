@@ -5,6 +5,9 @@ vim.keymap.set("n", "<C-p>", "<cmd>Telescope frecency workspace=CWD path_display
 vim.api.nvim_set_keymap("n", "<leader>%", ":vsplit<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", '<leader>"', ":split<CR>", { noremap = true, silent = true })
 
+-- tabs
+vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { silent = true })
+
 -- yank file path (relative to cwd)
 vim.keymap.set("n", "<leader>yf", function()
   local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
