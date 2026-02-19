@@ -1,18 +1,7 @@
--- NOTE: to make any of this work you need a language server.
--- If you don't know what that is, watch this 5 min video:
--- https://www.youtube.com/watch?v=LaS32vctfOY
-
 -- Reserve a space in the gutter
 vim.opt.signcolumn = 'yes'
 
--- Add blink.cmp capabilities settings to lspconfig
--- This should be executed before you configure any language server
-local lspconfig_defaults = require('lspconfig').util.default_config
-lspconfig_defaults.capabilities = vim.tbl_deep_extend(
-  'force',
-  lspconfig_defaults.capabilities,
-  require('blink.cmp').get_lsp_capabilities()
-)
+-- blink.cmp auto-injects capabilities on nvim 0.11 via its plugin file
 
 vim.api.nvim_create_autocmd('LspAttach', {
   desc = 'LSP actions',
@@ -25,11 +14,9 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
--- You'll find a list of language servers here:
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md
--- These are example language servers. 
-require('lspconfig').ts_ls.setup({
-  root_dir = require('lspconfig').util.root_pattern('pnpm-workspace.yaml', '.git'),
+vim.lsp.config('ts_ls', {
+  root_markers = { 'pnpm-workspace.yaml', '.git' },
   cmd_env = { NODE_OPTIONS = '--max-old-space-size=8192' },
   init_options = {
     preferences = {
@@ -38,15 +25,14 @@ require('lspconfig').ts_ls.setup({
     maxTsServerMemory = 8192,
   },
 })
-require('lspconfig').eslint.setup({
+
+vim.lsp.config('eslint', {
   cmd = { 'vscode-eslint-language-server', '--stdio' },
   settings = {
     nodePath = vim.fn.exepath('node'),
-    -- Scope eslint to the nearest package directory, not the whole monorepo
     workingDirectories = { mode = 'auto' },
   },
-  on_new_config = function(config)
-    -- Increase Node heap for eslint in large monorepos
-    config.cmd_env = { NODE_OPTIONS = '--max-old-space-size=8192' }
-  end,
+  cmd_env = { NODE_OPTIONS = '--max-old-space-size=8192' },
 })
+
+vim.lsp.enable({ 'ts_ls', 'eslint' })

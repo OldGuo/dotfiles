@@ -12,6 +12,11 @@ end
 
 vim.opt.rtp:prepend(lazypath)
 
+-- Initialize vim.lsp.config['*'] before plugins load (blink.cmp v1.x reads it)
+if vim.lsp.config then
+  vim.lsp.config('*', {})
+end
+
 require("lazy").setup({
   {
     "nvim-telescope/telescope.nvim",
@@ -82,7 +87,7 @@ require("lazy").setup({
         keymap = {
           ["<Up>"] = { "select_prev", "fallback" },
           ["<Down>"] = { "select_next", "fallback" },
-          ["<Tab>"] = { "select_next", "fallback" },
+          ["<Tab>"] = { "show", "select_next", "fallback" },
           ["<S-Tab>"] = { "select_prev", "fallback" },
         },
       },
