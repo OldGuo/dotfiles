@@ -1,2 +1,4 @@
 font-size = 16
 theme = "Builtin Solarized Dark"
+custom-shader = ./shaders/cursor-smear-fade.glsl
+custom-shader-animation = true

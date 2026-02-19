@@ -5,13 +5,13 @@
 -- Reserve a space in the gutter
 vim.opt.signcolumn = 'yes'
 
--- Add cmp_nvim_lsp capabilities settings to lspconfig
+-- Add blink.cmp capabilities settings to lspconfig
 -- This should be executed before you configure any language server
 local lspconfig_defaults = require('lspconfig').util.default_config
 lspconfig_defaults.capabilities = vim.tbl_deep_extend(
   'force',
   lspconfig_defaults.capabilities,
-  require('cmp_nvim_lsp').default_capabilities()
+  require('blink.cmp').get_lsp_capabilities()
 )
 
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -49,36 +49,4 @@ require('lspconfig').eslint.setup({
     -- Increase Node heap for eslint in large monorepos
     config.cmd_env = { NODE_OPTIONS = '--max-old-space-size=8192' }
   end,
-})
-
-local cmp = require('cmp')
-
-cmp.setup({
-  preselect = 'item',
-  completion = {
-    completeopt = 'menu,menuone,noinsert'
-  },
-  sources = {
-    {name = 'nvim_lsp'},
-    {name = 'buffer'},
-  },
-  snippet = {
-    expand = function(args)
-      -- You need Neovim v0.10 to use vim.snippet
-      vim.snippet.expand(args.body)
-    end,
-  },
-  mapping = cmp.mapping.preset.insert({
-    -- Simple tab complete
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.confirm({ select = true })
-      else
-	fallback()
-      end
-    end, {'i', 's'}),
-
-    -- Go to previous item
-    ['<CR>'] = cmp.mapping.confirm({select = true}),
-  }),
 })

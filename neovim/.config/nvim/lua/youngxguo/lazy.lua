@@ -67,12 +67,24 @@ require("lazy").setup({
     "saghen/blink.cmp",
     version = "1.*",
     opts = {
-      keymap = { preset = "default" },
+      keymap = {
+        preset = "default",
+        ["<Up>"] = { "select_prev", "fallback" },
+        ["<Down>"] = { "select_next", "fallback" },
+        ["<Tab>"] = { "show", "fallback" },
+        ["<CR>"] = { "accept", "fallback" },
+      },
       completion = {
         documentation = { auto_show = true },
       },
       cmdline = {
         enabled = true,
+        keymap = {
+          ["<Up>"] = { "select_prev", "fallback" },
+          ["<Down>"] = { "select_next", "fallback" },
+          ["<Tab>"] = { "select_next", "fallback" },
+          ["<S-Tab>"] = { "select_prev", "fallback" },
+        },
       },
       sources = {
         default = { "lsp", "path", "buffer" },
@@ -119,7 +131,6 @@ require("lazy").setup({
         override = {
           ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
           ["vim.lsp.util.stylize_markdown"] = true,
-          ["cmp.entry.get_documentation"] = true,
         },
         progress = { enabled = false },
       },
