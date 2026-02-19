@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -182,11 +183,20 @@ def install_scm_breeze():
     print("installing scm breeze (git plugin)")
     scm_dir = HOME / ".scm_breeze"
     clone_if_missing("https://github.com/scmbreeze/scm_breeze.git", scm_dir)
-    installer = scm_dir / "install.sh"
-    if installer.exists():
-        run([str(installer)])
-    else:
-        print(f"skipping scm breeze installer (not found at {installer})")
+    scm_lib = scm_dir / "lib/scm_breeze.sh"
+    if not scm_lib.exists():
+        print(f"skipping scm breeze config bootstrap (not found at {scm_lib})")
+        return
+    if not command_exists("bash"):
+        print("skipping scm breeze config bootstrap: bash is not available")
+        return
+    print("ensuring scm breeze user config files")
+    cmd = (
+        f"scmbDir={shlex.quote(str(scm_dir))}; "
+        f"source {shlex.quote(str(scm_lib))}; "
+        "_create_or_patch_scmbrc"
+    )
+    run(["bash", "-lc", cmd])
 
 
 def install_neovim():
@@ -204,7 +214,7 @@ def install_neovim():
             "nvim",
             "--headless",
             "-c",
-            "lua require('oldguo.packer')",
+            "lua require('youngxguo.packer')",
             "-c",
             "autocmd User PackerComplete quitall",
             "-c",

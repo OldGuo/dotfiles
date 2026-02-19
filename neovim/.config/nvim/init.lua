@@ -7,4 +7,4 @@ vim.notify = function(msg, ...)
   notify(msg, ...)
 end
 
-require("oldguo")
+require("youngxguo")
