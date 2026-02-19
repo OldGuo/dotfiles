@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal macOS dotfiles bootstrap for:
+Personal macOS/Linux dotfiles bootstrap for:
 - `zsh`
 - `tmux`
 - `neovim`
@@ -9,10 +9,10 @@ Personal macOS dotfiles bootstrap for:
 - `codex`
 
 ## Prerequisites
-- macOS (Apple Silicon/Homebrew path assumptions)
-- Admin access (needed only if you want to change login shell with `chsh`)
-- Xcode command line tools/license accepted (`sudo xcodebuild -license`)
-- Internet access for Homebrew and git clone steps
+- macOS or Linux
+- Admin access (needed if package installation or `chsh` is required)
+- macOS only: Xcode command line tools/license accepted (`sudo xcodebuild -license`)
+- Internet access for package installs and git clone steps
 
 ## Fresh Machine Setup
 ```sh
@@ -27,7 +27,7 @@ APPLY_LOGIN_SHELL=1 python3 install.py
 ```
 
 ## What Install Does
-- Installs missing packages via Homebrew (`zsh`, `direnv`, `fzf`, `tmux`, `neovim`, `ripgrep`, `fd`)
+- Installs missing packages via Homebrew (or Linux package manager fallback: `apt`/`dnf`/`pacman`/`zypper`) for `zsh`, `direnv`, `fzf`, `tmux`, `neovim`, `ripgrep`, `fd`
 - Installs Oh My Zsh and shell plugins
 - Installs `scm_breeze`
 - Symlinks configs from this repo into `$HOME`
