@@ -4,6 +4,10 @@ if not ok then
 end
 
 gitsigns.setup({
+  update_debounce = 100,
+  watch_gitdir = {
+    follow_files = true,
+  },
   signs = {
     add = { text = "+" },
     change = { text = "~" },

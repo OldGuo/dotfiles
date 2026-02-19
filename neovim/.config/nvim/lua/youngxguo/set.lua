@@ -23,4 +23,17 @@ vim.opt.signcolumn = "yes"
 vim.opt.isfname:append("@-@")
 
 vim.opt.updatetime = 50
+vim.opt.autoread = true
 
+local checktime_group = vim.api.nvim_create_augroup("checktime", { clear = true })
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+  group = checktime_group,
+  command = "checktime",
+})
+
+vim.api.nvim_create_autocmd("FileChangedShellPost", {
+  group = checktime_group,
+  callback = function()
+    vim.notify("File updated on disk. Reloaded.")
+  end,
+})

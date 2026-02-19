@@ -38,4 +38,13 @@ require("lazy").setup({
   { "lukas-reineke/indent-blankline.nvim" },
   { "akinsho/bufferline.nvim" },
   { "lewis6991/gitsigns.nvim" },
+  { "nvim-tree/nvim-web-devicons" },
+  { "tpope/vim-fugitive" },
+  {
+    "sindrets/diffview.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+      use_icons = true,
+    },
+  },
 })
