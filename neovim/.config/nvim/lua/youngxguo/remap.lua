@@ -8,6 +8,30 @@ vim.api.nvim_set_keymap("n", "<leader>bd", ":bdelete<CR>", { noremap = true, sil
 vim.api.nvim_set_keymap("n", "<leader>%", ":vsplit<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", '<leader>"', ":split<CR>", { noremap = true, silent = true })
 
+-- yank file path (relative to cwd)
+vim.keymap.set("n", "<leader>yf", function()
+  local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+  vim.fn.setreg("+", path)
+  vim.notify(path)
+end, { silent = true })
+
+-- yank remote git URL for current file
+vim.keymap.set("n", "<leader>yu", function()
+  local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+  local line = vim.fn.line(".")
+  local remote = vim.fn.trim(vim.fn.system("git remote get-url origin"))
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Not a git repo or no remote", vim.log.levels.ERROR)
+    return
+  end
+  -- normalize to https URL
+  local url = remote:gsub("git@([^:]+):", "https://%1/"):gsub("%.git$", "")
+  local branch = vim.fn.trim(vim.fn.system("git rev-parse --abbrev-ref HEAD"))
+  url = url .. "/blob/" .. branch .. "/" .. path .. "#L" .. line
+  vim.fn.setreg("+", url)
+  vim.notify(url)
+end, { silent = true })
+
 -- git diff workflow
 vim.keymap.set("n", "<leader>gd", function()
   local ok, lib = pcall(require, "diffview.lib")
