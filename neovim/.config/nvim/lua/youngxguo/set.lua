@@ -52,3 +52,26 @@ vim.api.nvim_create_autocmd("FileChangedShellPost", {
     vim.notify("File updated on disk. Reloaded.")
   end,
 })
+
+-- Ensure treesitter syntax highlighting in diff buffers (fugitive://, etc.)
+vim.api.nvim_create_autocmd("BufWinEnter", {
+  callback = function(args)
+    local buf = args.buf
+    local ft = vim.bo[buf].filetype
+    if ft and ft ~= "" and vim.wo.diff then
+      pcall(vim.treesitter.start, buf, ft)
+    end
+  end,
+})
+
+-- Auto-refresh diffview on file save and focus
+vim.api.nvim_create_autocmd({ "BufWritePost", "FocusGained" }, {
+  callback = function()
+    pcall(function()
+      local lib = require("diffview.lib")
+      if lib.get_current_view() then
+        require("diffview.actions").refresh_files()
+      end
+    end)
+  end,
+})

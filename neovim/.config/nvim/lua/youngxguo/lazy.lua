@@ -161,6 +161,25 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {
       use_icons = true,
+      hooks = {
+        diff_buf_read = function(bufnr)
+          vim.schedule(function()
+            if not vim.api.nvim_buf_is_valid(bufnr) then return end
+            local ft = vim.bo[bufnr].filetype
+            if not ft or ft == "" then
+              local name = vim.api.nvim_buf_get_name(bufnr)
+              local clean = name:gsub("^diffview://.-/%.git/.-/", "")
+              ft = vim.filetype.match({ buf = bufnr, filename = clean })
+              if ft then
+                vim.bo[bufnr].filetype = ft
+              end
+            end
+            if ft and ft ~= "" then
+              pcall(vim.treesitter.start, bufnr, ft)
+            end
+          end)
+        end,
+      },
     },
   },
   {

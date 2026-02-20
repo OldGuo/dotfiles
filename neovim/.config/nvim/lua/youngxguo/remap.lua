@@ -48,6 +48,7 @@ vim.keymap.set("n", "<leader>gd", function()
       for _, view in ipairs(lib.views) do
         if view and view.tabpage and vim.api.nvim_tabpage_is_valid(view.tabpage) then
           vim.api.nvim_set_current_tabpage(view.tabpage)
+          pcall(require("diffview.actions").refresh_files)
           return
         end
       end
