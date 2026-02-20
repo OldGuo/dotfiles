@@ -1,6 +1,20 @@
 -- Reserve a space in the gutter
 vim.opt.signcolumn = 'yes'
 
+vim.diagnostic.config({
+  underline = true,
+  virtual_text = { spacing = 4, prefix = '●' },
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = '✘',
+      [vim.diagnostic.severity.WARN] = '▲',
+      [vim.diagnostic.severity.HINT] = '⚑',
+      [vim.diagnostic.severity.INFO] = '»',
+    },
+  },
+  severity_sort = true,
+})
+
 -- blink.cmp auto-injects capabilities on nvim 0.11 via its plugin file
 
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -36,3 +50,13 @@ vim.lsp.config('eslint', {
 })
 
 vim.lsp.enable({ 'ts_ls', 'eslint' })
+
+vim.api.nvim_create_autocmd('BufWritePre', {
+  pattern = { '*.ts', '*.tsx', '*.js', '*.jsx' },
+  callback = function(event)
+    local clients = vim.lsp.get_clients({ bufnr = event.buf, name = 'eslint' })
+    if #clients > 0 then
+      vim.cmd('silent! LspEslintFixAll')
+    end
+  end,
+})
