@@ -23,6 +23,7 @@ require("lazy").setup({
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope-frecency.nvim",
+      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
     },
     config = function()
       require("telescope").setup({
@@ -33,6 +34,12 @@ require("lazy").setup({
           },
         },
         extensions = {
+          fzf = {
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = "smart_case",
+          },
           frecency = {
             workspace_scan_cmd = { "find", ".", "-type", "f" },
             default_workspace = "CWD",
@@ -40,6 +47,7 @@ require("lazy").setup({
           },
         },
       })
+      require("telescope").load_extension("fzf")
       require("telescope").load_extension("frecency")
     end,
   },

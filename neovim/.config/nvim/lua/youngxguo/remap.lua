@@ -72,3 +72,13 @@ vim.keymap.set("n", "<leader>gl", function()
 
   require("neogit").action("log", "log_all_references", { "--graph", "--decorate", "--color" })()
 end, { silent = true })
+
+vim.keymap.set("n", "<leader>gL", function()
+  local file = vim.fn.expand("%:.")
+  if file == "" then
+    return
+  end
+
+  local p = require("neogit.popups.log").create()
+  p.state.env.files = { file }
+end, { silent = true })
