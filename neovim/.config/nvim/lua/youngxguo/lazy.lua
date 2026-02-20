@@ -53,6 +53,7 @@ require("lazy").setup({
             case_mode = "smart_case",
           },
           frecency = {
+            matcher = "fuzzy",
             workspace_scan_cmd = { "rg", "--files" },
             default_workspace = "CWD",
             db_safe_mode = false,
