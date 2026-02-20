@@ -32,6 +32,18 @@ require("lazy").setup({
           layout_config = {
             prompt_position = "top",
           },
+          file_ignore_patterns = {
+            "node_modules/",
+            "bazel%-out/",
+            "bazel%-bin/",
+            "bazel%-testlogs/",
+            "bazel%-applied%w+/",
+            "%.git/",
+            "lcov%-report/",
+            "map_tiles/",
+            "%.generated",
+            "data/py/",
+          },
         },
         extensions = {
           fzf = {
@@ -41,7 +53,7 @@ require("lazy").setup({
             case_mode = "smart_case",
           },
           frecency = {
-            workspace_scan_cmd = { "find", ".", "-type", "f" },
+            workspace_scan_cmd = { "rg", "--files" },
             default_workspace = "CWD",
             db_safe_mode = false,
           },
@@ -105,6 +117,12 @@ require("lazy").setup({
     },
   },
   { "lukas-reineke/indent-blankline.nvim" },
+  {
+    "karb94/neoscroll.nvim",
+    opts = {
+      duration_multiplier = 0.5,
+    },
+  },
 
   { "lewis6991/gitsigns.nvim" },
   { "nvim-tree/nvim-web-devicons" },
