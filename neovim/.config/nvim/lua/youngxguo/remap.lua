@@ -5,6 +5,10 @@ vim.keymap.set("n", "<C-p>", "<cmd>Telescope frecency workspace=CWD path_display
 vim.api.nvim_set_keymap("n", "<leader>%", ":vsplit<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", '<leader>"', ":split<CR>", { noremap = true, silent = true })
 
+-- search: center + open folds after jumping (neoscroll animates the zz)
+vim.keymap.set("n", "n", "nzzzv")
+vim.keymap.set("n", "N", "Nzzzv")
+
 -- tabs
 vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { silent = true })
 
