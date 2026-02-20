@@ -113,6 +113,11 @@
       "launchpad": false
     },
 
+    // ESLint settings
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+
     // Files settings
     "files.trimTrailingWhitespace": true,
     "files.watcherExclude": {
