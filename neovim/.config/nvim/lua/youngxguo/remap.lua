@@ -1,6 +1,57 @@
 vim.g.mapleader = " "
-vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
-vim.keymap.set("n", "<C-p>", "<cmd>Telescope frecency workspace=CWD path_display={\"truncate\"}<CR>", { silent = true })
+-- file tree sidebar (vscode-like Ctrl+B)
+vim.keymap.set("n", "<leader>b", "<cmd>NvimTreeToggle<CR>", { silent = true })
+
+-- file picker: open buffers first, then recent files (from shada), then all files
+vim.keymap.set("n", "<C-p>", function()
+  -- 1. collect open buffers
+  local bufs, seen = {}, {}
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(b) and vim.bo[b].buflisted then
+      local name = vim.api.nvim_buf_get_name(b)
+      if name ~= "" then
+        local rel = vim.fn.fnamemodify(name, ":.")
+        if rel ~= "" then
+          table.insert(bufs, rel)
+          seen[rel] = true
+        end
+      end
+    end
+  end
+
+  -- 2. recent files from previous sessions (oldfiles persisted via shada)
+  local cwd = vim.fn.getcwd() .. "/"
+  local recent = {}
+  for _, f in ipairs(vim.v.oldfiles) do
+    if f:sub(1, #cwd) == cwd then
+      local rel = f:sub(#cwd + 1)
+      if not seen[rel] and vim.fn.filereadable(f) == 1 then
+        table.insert(recent, rel)
+        seen[rel] = true
+      end
+    end
+  end
+
+  -- 3. remaining workspace files via rg
+  local rest = {}
+  for _, f in ipairs(vim.fn.systemlist({ "rg", "--files" })) do
+    if not seen[f] then
+      table.insert(rest, f)
+    end
+  end
+
+  local results = vim.list_extend(vim.list_extend(bufs, recent), rest)
+
+  require("telescope.pickers").new({}, {
+    prompt_title = "Files",
+    finder = require("telescope.finders").new_table({
+      results = results,
+      entry_maker = require("telescope.make_entry").gen_from_file({ path_display = { "truncate" } }),
+    }),
+    sorter = require("telescope.config").values.file_sorter({}),
+    previewer = require("telescope.config").values.file_previewer({}),
+  }):find()
+end, { silent = true })
 -- splits
 vim.api.nvim_set_keymap("n", "<leader>%", ":vsplit<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", '<leader>"', ":split<CR>", { noremap = true, silent = true })
@@ -35,6 +86,10 @@ vim.keymap.set("n", "<leader>yu", function()
   vim.fn.setreg("+", url)
   vim.notify(url)
 end, { silent = true })
+
+-- git hunk navigation (gitsigns)
+vim.keymap.set("n", "<leader>gj", function() require("gitsigns").nav_hunk("next") end, { silent = true, desc = "Next git change" })
+vim.keymap.set("n", "<leader>gk", function() require("gitsigns").nav_hunk("prev") end, { silent = true, desc = "Previous git change" })
 
 -- git diff workflow
 vim.keymap.set("n", "<leader>gd", function()

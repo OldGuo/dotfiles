@@ -82,15 +82,12 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    opts = {
-      ensure_installed = { "javascript", "typescript", "lua", "c" },
-      sync_install = false,
-      auto_install = true,
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = false,
-      },
-    },
+    config = function()
+      require("nvim-treesitter").setup({
+        ensure_installed = { "javascript", "typescript", "lua", "c" },
+        auto_install = true,
+      })
+    end,
   },
   { "neovim/nvim-lspconfig" },
   { "stevearc/conform.nvim", lazy = false },
@@ -132,7 +129,17 @@ require("lazy").setup({
     },
   },
 
+  { "nvim-treesitter/nvim-treesitter-context", main = "treesitter-context", opts = { max_lines = 3 } },
   { "lewis6991/gitsigns.nvim" },
+  {
+    "nvim-tree/nvim-tree.lua",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {
+      disable_netrw = true,
+      filters = { dotfiles = false },
+      update_focused_file = { enable = true },
+    },
+  },
   { "nvim-tree/nvim-web-devicons" },
   {
     "akinsho/bufferline.nvim",
