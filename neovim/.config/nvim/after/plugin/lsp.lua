@@ -29,10 +29,52 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
+local function local_tsserver_path(root_dir)
+  if not root_dir or root_dir == '' then
+    return nil
+  end
+
+  local path = root_dir .. '/node_modules/typescript/lib/tsserver.js'
+  if vim.uv.fs_stat(path) then
+    return path
+  end
+
+  return nil
+end
+
+local function lsp_root_from_init(init_params, config)
+  if config and type(config.root_dir) == 'string' and config.root_dir ~= '' then
+    return config.root_dir
+  end
+
+  if init_params and init_params.rootPath and init_params.rootPath ~= '' then
+    return init_params.rootPath
+  end
+
+  if init_params and init_params.rootUri and init_params.rootUri ~= '' then
+    return vim.uri_to_fname(init_params.rootUri)
+  end
+
+  return nil
+end
+
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md
 vim.lsp.config('ts_ls', {
-  root_markers = { 'pnpm-workspace.yaml', '.git' },
+  root_markers = { 'pnpm-workspace.yaml', 'pnpm-lock.yaml', 'tsconfig.json', 'package.json', '.git' },
   cmd_env = { NODE_OPTIONS = '--max-old-space-size=8192' },
+  before_init = function(init_params, config)
+    local root_dir = lsp_root_from_init(init_params, config)
+    local tsserver_path = local_tsserver_path(root_dir)
+    if not tsserver_path then
+      return
+    end
+
+    config.init_options = vim.tbl_deep_extend('force', config.init_options or {}, {
+      tsserver = {
+        path = tsserver_path,
+      },
+    })
+  end,
   init_options = {
     preferences = {
       preferGoToSourceDefinition = true,
