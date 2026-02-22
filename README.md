@@ -36,6 +36,26 @@ APPLY_LOGIN_SHELL=1 python3 install.py
 
 The script is designed to be rerunnable and backs up pre-existing target files before replacing them with symlinks.
 
+## Git Hooks (Recommended)
+Enable the repo-managed hooks so `pre-push` runs an install idempotency check:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+The `pre-push` hook runs:
+
+```sh
+python3 install.py --verify-idempotent
+```
+
+This uses a temporary `HOME` and skips package/network/bootstrap side effects while verifying the install flow is rerunnable.  
+To bypass temporarily:
+
+```sh
+SKIP_DOTFILES_PREPUSH=1 git push
+```
+
 ## Quick Verify
 - `zsh --version`
 - `tmux -V`

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -12,6 +14,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 HOME = Path.home()
 LINUX_APT_UPDATED = False
+VERIFY_MODE = False
 
 LINUX_PACKAGE_OVERRIDES = {
     "fd": {
@@ -143,6 +146,9 @@ def brew_prefix():
 
 
 def install_package(pkg):
+    if VERIFY_MODE:
+        print(f"verify mode: skipping package install for {pkg}")
+        return False
     if not command_exists("brew"):
         if sys.platform.startswith("linux"):
             return linux_install(pkg)
@@ -159,6 +165,9 @@ def install_package(pkg):
 
 def clone_if_missing(repo_url, target_dir):
     target = Path(target_dir).expanduser()
+    if VERIFY_MODE:
+        print(f"verify mode: skipping clone for {repo_url} -> {target}")
+        return
     git_dir = target / ".git"
     if git_dir.is_dir():
         print(f"repo already present at {target}")
@@ -190,6 +199,9 @@ def link_file(source_path, target_path):
 
 def install_homebrew():
     print("installing homebrew")
+    if VERIFY_MODE:
+        print("verify mode: skipping homebrew bootstrap")
+        return False
     if command_exists("brew"):
         print("homebrew already installed")
         return True
@@ -215,48 +227,55 @@ def install_homebrew():
 
 def install_zsh_stack():
     print("installing zsh")
-    install_package("zsh")
-    if not command_exists("zsh"):
-        print("skipping zsh setup: zsh is not installed")
-        return
-
-    print("installing oh my zsh")
-    oh_my_zsh_dir = HOME / ".oh-my-zsh"
-    if oh_my_zsh_dir.is_dir():
-        print("oh my zsh already installed")
+    if VERIFY_MODE:
+        print("verify mode: skipping zsh package/plugin bootstrap")
     else:
-        env = os.environ.copy()
-        env["RUNZSH"] = "no"
-        env["CHSH"] = "no"
-        env["KEEP_ZSHRC"] = "yes"
-        run(
-            [
-                "sh",
-                "-c",
-                "curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh",
-            ],
-            env=env,
+        install_package("zsh")
+        if not command_exists("zsh"):
+            print("skipping zsh setup: zsh is not installed")
+            return
+
+        print("installing oh my zsh")
+        oh_my_zsh_dir = HOME / ".oh-my-zsh"
+        if oh_my_zsh_dir.is_dir():
+            print("oh my zsh already installed")
+        else:
+            env = os.environ.copy()
+            env["RUNZSH"] = "no"
+            env["CHSH"] = "no"
+            env["KEEP_ZSHRC"] = "yes"
+            run(
+                [
+                    "sh",
+                    "-c",
+                    "curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh",
+                ],
+                env=env,
+            )
+
+        print("installing zsh plugins")
+        install_package("direnv")
+        zsh_custom = os.environ.get("ZSH_CUSTOM", str(HOME / ".oh-my-zsh/custom"))
+        clone_if_missing(
+            "https://github.com/zsh-users/zsh-autosuggestions",
+            Path(zsh_custom) / "plugins/zsh-autosuggestions",
         )
 
-    print("installing zsh plugins")
-    install_package("direnv")
-    zsh_custom = os.environ.get("ZSH_CUSTOM", str(HOME / ".oh-my-zsh/custom"))
-    clone_if_missing(
-        "https://github.com/zsh-users/zsh-autosuggestions",
-        Path(zsh_custom) / "plugins/zsh-autosuggestions",
-    )
-
-    if install_package("fzf"):
-        prefix = brew_prefix()
-        if prefix:
-            fzf_install = Path(prefix) / "opt/fzf/install"
-            if fzf_install.exists():
-                run([str(fzf_install), "--all", "--no-update-rc"])
-            else:
-                print(f"skipping fzf installer (not found at {fzf_install})")
+        if install_package("fzf"):
+            prefix = brew_prefix()
+            if prefix:
+                fzf_install = Path(prefix) / "opt/fzf/install"
+                if fzf_install.exists():
+                    run([str(fzf_install), "--all", "--no-update-rc"])
+                else:
+                    print(f"skipping fzf installer (not found at {fzf_install})")
 
     print("applying zsh config")
     link_file(REPO_ROOT / "zsh/.zshrc", HOME / ".zshrc")
+
+    if VERIFY_MODE:
+        print("verify mode: skipping chsh")
+        return
 
     zsh_path = shutil.which("zsh")
     target_shell = Path(zsh_path) if zsh_path else None
@@ -295,6 +314,9 @@ def install_vscode():
 
 
 def install_scm_breeze():
+    if VERIFY_MODE:
+        print("verify mode: skipping scm breeze bootstrap")
+        return
     print("installing scm breeze (git plugin)")
     scm_dir = HOME / ".scm_breeze"
     clone_if_missing("https://github.com/scmbreeze/scm_breeze.git", scm_dir)
@@ -320,6 +342,11 @@ def install_codex():
 
 
 def install_neovim():
+    if VERIFY_MODE:
+        print("verify mode: skipping neovim package/bootstrap")
+        link_file(REPO_ROOT / "neovim/.config/nvim", HOME / ".config/nvim")
+        print("verify mode: skipping neovim sync")
+        return
     install_package("neovim")
     install_package("ripgrep")
     install_package("fd")
@@ -333,7 +360,7 @@ def install_neovim():
     run(["nvim", "--headless", "-c", "TSUpdateSync", "-c", "quitall"])
 
 
-def main():
+def run_install_flow():
     install_homebrew()
     install_zsh_stack()
     install_ghostty()
@@ -343,6 +370,97 @@ def main():
     install_scm_breeze()
     install_neovim()
     print("Done")
+
+
+def snapshot_tree(root):
+    snapshot = {}
+    for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
+        dirpath_path = Path(dirpath)
+
+        kept_dirs = []
+        for dirname in sorted(dirnames):
+            path = dirpath_path / dirname
+            rel = path.relative_to(root).as_posix()
+            if path.is_symlink():
+                snapshot[rel] = ("symlink", os.readlink(path))
+            else:
+                snapshot[rel] = ("dir",)
+                kept_dirs.append(dirname)
+        dirnames[:] = kept_dirs
+
+        for filename in sorted(filenames):
+            path = dirpath_path / filename
+            rel = path.relative_to(root).as_posix()
+            if path.is_symlink():
+                snapshot[rel] = ("symlink", os.readlink(path))
+            elif path.is_file():
+                snapshot[rel] = ("file", path.read_bytes())
+    return snapshot
+
+
+def verify_idempotent():
+    global HOME, VERIFY_MODE, LINUX_APT_UPDATED
+
+    print("verifying install.py idempotency (safe mode)")
+    original_home = HOME
+    original_verify = VERIFY_MODE
+    original_apt_updated = LINUX_APT_UPDATED
+
+    with tempfile.TemporaryDirectory(prefix="dotfiles-idempotent-") as tmpdir:
+        HOME = Path(tmpdir) / "home"
+        HOME.mkdir(parents=True, exist_ok=True)
+        VERIFY_MODE = True
+        LINUX_APT_UPDATED = False
+
+        print(f"using temporary HOME: {HOME}")
+        run_install_flow()
+        first_snapshot = snapshot_tree(HOME)
+        run_install_flow()
+        second_snapshot = snapshot_tree(HOME)
+
+        backup_files = sorted(HOME.rglob("*.bak.*"))
+        if backup_files:
+            print("idempotency check failed: backup files were created during verify mode", file=sys.stderr)
+            for path in backup_files:
+                print(f"- {path}", file=sys.stderr)
+            sys.exit(1)
+
+        if first_snapshot != second_snapshot:
+            print("idempotency check failed: filesystem state changed between run #1 and run #2", file=sys.stderr)
+            first_keys = set(first_snapshot)
+            second_keys = set(second_snapshot)
+            for rel in sorted(first_keys - second_keys):
+                print(f"- missing after second run: {rel}", file=sys.stderr)
+            for rel in sorted(second_keys - first_keys):
+                print(f"- added after second run: {rel}", file=sys.stderr)
+            for rel in sorted(first_keys & second_keys):
+                if first_snapshot[rel] != second_snapshot[rel]:
+                    print(f"- changed on second run: {rel}", file=sys.stderr)
+            sys.exit(1)
+
+        print("idempotency verification passed")
+
+    HOME = original_home
+    VERIFY_MODE = original_verify
+    LINUX_APT_UPDATED = original_apt_updated
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Bootstrap dotfiles on macOS/Linux.")
+    parser.add_argument(
+        "--verify-idempotent",
+        action="store_true",
+        help="Run a safe two-pass install verification in a temporary HOME.",
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    if args.verify_idempotent:
+        verify_idempotent()
+        return
+    run_install_flow()
 
 
 if __name__ == "__main__":
