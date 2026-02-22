@@ -62,6 +62,7 @@ vim.keymap.set("n", "N", "Nzzzv")
 
 -- tabs
 vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { silent = true })
+vim.keymap.set("n", "<leader>tc", "<cmd>tabclose<CR>", { silent = true })
 
 -- yank file path (relative to cwd)
 vim.keymap.set("n", "<leader>yf", function()
