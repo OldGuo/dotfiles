@@ -95,13 +95,32 @@ vim.keymap.set("n", "<leader>gk", function() require("gitsigns").nav_hunk("prev"
 vim.keymap.set("n", "<leader>gd", function()
   local ok, lib = pcall(require, "diffview.lib")
   if ok and lib then
-    if lib.get_current_view and lib.get_current_view() then
-      return
+    local ok_diffview, DiffView = pcall(function()
+      return require("diffview.scene.views.diff.diff_view").DiffView
+    end)
+
+    local function is_worktree_diff_view(view)
+      if not view then
+        return false
+      end
+
+      if ok_diffview and DiffView and view.instanceof then
+        return view:instanceof(DiffView)
+      end
+
+      return false
+    end
+
+    if lib.get_current_view then
+      local current_view = lib.get_current_view()
+      if is_worktree_diff_view(current_view) then
+        return
+      end
     end
 
     if type(lib.views) == "table" then
       for _, view in ipairs(lib.views) do
-        if view and view.tabpage and vim.api.nvim_tabpage_is_valid(view.tabpage) then
+        if is_worktree_diff_view(view) and view.tabpage and vim.api.nvim_tabpage_is_valid(view.tabpage) then
           vim.api.nvim_set_current_tabpage(view.tabpage)
           pcall(require("diffview.actions").refresh_files)
           return
@@ -127,21 +146,14 @@ vim.keymap.set("n", "<leader>oc", "<cmd>Octo pr checkout<CR>", { silent = true }
 vim.keymap.set("n", "<leader>or", "<cmd>Octo review start<CR>", { silent = true })
 vim.keymap.set("n", "<leader>od", "<cmd>Octo pr diff<CR>", { silent = true })
 
-vim.keymap.set("n", "<leader>gl", function()
-  local log_view = require("neogit.buffers.log_view")
-  if log_view.is_open() and log_view.instance then
-    log_view.instance:close()
-  end
-
-  require("neogit").action("log", "log_all_references", { "--graph", "--decorate", "--color" })()
-end, { silent = true })
+vim.keymap.set("n", "<leader>gl", "<cmd>DiffviewFileHistory<CR>", { silent = true, desc = "Git history (Diffview)" })
 
 vim.keymap.set("n", "<leader>gL", function()
-  local file = vim.fn.expand("%:.")
-  if file == "" then
+  local file = vim.fn.expand("%")
+  if file == "" or vim.bo.buftype ~= "" then
+    vim.notify("No file in current buffer", vim.log.levels.WARN)
     return
   end
 
-  local p = require("neogit.popups.log").create()
-  p.state.env.files = { file }
-end, { silent = true })
+  vim.cmd("DiffviewFileHistory --follow -- " .. vim.fn.fnameescape(file))
+end, { silent = true, desc = "Git file history (Diffview)" })
