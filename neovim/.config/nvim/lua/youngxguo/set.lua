@@ -8,7 +8,9 @@ vim.opt.expandtab = true
 
 vim.opt.smartindent = true
 
-vim.opt.wrap = false
+vim.opt.wrap = true
+vim.opt.linebreak = true
+vim.opt.breakindent = true
 vim.opt.cursorline = true
 
 vim.opt.swapfile = false
@@ -58,6 +60,11 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function(args)
     local buf = args.buf
     local ft = vim.bo[buf].filetype
+    if vim.wo.diff then
+      vim.wo.wrap = true
+      vim.wo.linebreak = true
+      vim.wo.breakindent = true
+    end
     if ft and ft ~= "" and vim.wo.diff then
       pcall(vim.treesitter.start, buf, ft)
     end
