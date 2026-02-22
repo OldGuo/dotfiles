@@ -111,8 +111,21 @@ require("lazy").setup({
         keymap = {
           ["<Up>"] = { "select_prev", "fallback" },
           ["<Down>"] = { "select_next", "fallback" },
-          ["<Tab>"] = { "show", "select_next", "fallback" },
+          ["<Tab>"] = { "show", "accept", "fallback" },
           ["<S-Tab>"] = { "select_prev", "fallback" },
+        },
+        completion = {
+          list = {
+            selection = {
+              preselect = true,
+              auto_insert = false,
+            },
+          },
+          menu = {
+            auto_show = function()
+              return vim.fn.getcmdtype() == ":"
+            end,
+          },
         },
       },
       sources = {
