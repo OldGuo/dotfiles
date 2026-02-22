@@ -91,7 +91,6 @@ require("lazy").setup({
   },
   { "neovim/nvim-lspconfig" },
   { "stevearc/conform.nvim", lazy = false },
-  { "mfussenegger/nvim-lint", lazy = false },
   { "j-hui/fidget.nvim", opts = {} },
   {
     "saghen/blink.cmp",
