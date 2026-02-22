@@ -110,6 +110,8 @@ vim.keymap.set("n", "<leader>gD", "<cmd>DiffviewClose<CR>", { silent = true, des
 vim.keymap.set("n", "<leader>gl", function()
   if focus_view(function(view, ctx)
     return is_view(view, ctx.FileHistoryView) and view.panel and not view.panel.single_file
+  end, function()
+    pcall(require("diffview.actions").refresh_files)
   end) then
     return
   end
@@ -126,6 +128,8 @@ vim.keymap.set("n", "<leader>gL", function()
 
   if focus_view(function(view)
     return file_history_matches(view, file)
+  end, function()
+    pcall(require("diffview.actions").refresh_files)
   end) then
     return
   end
