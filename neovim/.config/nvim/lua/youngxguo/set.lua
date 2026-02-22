@@ -64,14 +64,30 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
   end,
 })
 
--- Auto-refresh diffview on file save and focus
+-- Auto-refresh diffview on file save/focus, but debounce rapid bursts.
+local uv = vim.uv or vim.loop
+local diffview_refresh_timer = uv.new_timer()
+local diffview_refresh_delay_ms = 250
+
+local function refresh_diffview_if_open()
+  pcall(function()
+    local lib = require("diffview.lib")
+    if lib.get_current_view() then
+      require("diffview.actions").refresh_files()
+    end
+  end)
+end
+
 vim.api.nvim_create_autocmd({ "BufWritePost", "FocusGained" }, {
   callback = function()
-    pcall(function()
-      local lib = require("diffview.lib")
-      if lib.get_current_view() then
-        require("diffview.actions").refresh_files()
-      end
-    end)
+    diffview_refresh_timer:stop()
+    diffview_refresh_timer:start(diffview_refresh_delay_ms, 0, vim.schedule_wrap(refresh_diffview_if_open))
+  end,
+})
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  callback = function()
+    diffview_refresh_timer:stop()
+    diffview_refresh_timer:close()
   end,
 })
