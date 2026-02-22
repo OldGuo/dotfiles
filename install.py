@@ -271,6 +271,10 @@ def install_zsh_stack():
 def install_ghostty():
     print("applying ghostty config")
     link_file(REPO_ROOT / "ghostty/config", HOME / ".config/ghostty/config")
+    shader_dir = REPO_ROOT / "ghostty/shaders"
+    if shader_dir.is_dir():
+        for shader_file in sorted(shader_dir.glob("*.glsl")):
+            link_file(shader_file, HOME / ".config/ghostty/shaders" / shader_file.name)
 
 
 def install_tmux():
