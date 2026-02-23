@@ -5,3 +5,4 @@ sandbox_mode = "danger-full-access"
 
 [notice]
 hide_full_access_warning = true
+hide_rate_limit_model_nudge = true
