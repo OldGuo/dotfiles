@@ -142,6 +142,35 @@ require("lazy").setup({
   },
 
   { "nvim-treesitter/nvim-treesitter-context", main = "treesitter-context", opts = { max_lines = 3 } },
+  {
+    "Bekaboo/dropbar.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {},
+    keys = {
+      {
+        "<leader>;",
+        function()
+          require("dropbar.api").pick()
+        end,
+        desc = "Pick breadcrumb",
+      },
+      {
+        "[;",
+        function()
+          require("dropbar.api").goto_context_start()
+        end,
+        desc = "Context start",
+      },
+      {
+        "];",
+        function()
+          require("dropbar.api").select_next_context()
+        end,
+        desc = "Next context",
+      },
+    },
+  },
   { "lewis6991/gitsigns.nvim" },
   {
     "nvim-tree/nvim-tree.lua",
