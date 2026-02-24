@@ -120,19 +120,5 @@ vim.keymap.set("n", "<leader>gl", function()
 end, { silent = true, desc = "Git history (Diffview)" })
 
 vim.keymap.set("n", "<leader>gL", function()
-  local file = vim.fn.expand("%")
-  if file == "" or vim.bo.buftype ~= "" then
-    vim.notify("No file in current buffer", vim.log.levels.WARN)
-    return
-  end
-
-  if focus_view(function(view)
-    return file_history_matches(view, file)
-  end, function()
-    pcall(require("diffview.actions").refresh_files)
-  end) then
-    return
-  end
-
-  vim.cmd("DiffviewFileHistory --follow -- " .. vim.fn.fnameescape(file))
-end, { silent = true, desc = "Git file history (Diffview)" })
+  require("telescope.builtin").git_bcommits()
+end, { silent = true, desc = "Git log current file" })
