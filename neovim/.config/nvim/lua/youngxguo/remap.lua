@@ -4,20 +4,23 @@ vim.keymap.set("n", "<leader>b", "<cmd>NvimTreeToggle<CR>", { silent = true })
 
 -- file picker: open buffers first, then recent files (from shada), then all files
 vim.keymap.set("n", "<C-p>", function()
-  -- 1. collect open buffers
-  local bufs, seen = {}, {}
+  -- 1. collect open buffers, sorted most-recently-used first
+  local buf_entries, seen = {}, {}
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_loaded(b) and vim.bo[b].buflisted then
       local name = vim.api.nvim_buf_get_name(b)
       if name ~= "" then
         local rel = vim.fn.fnamemodify(name, ":.")
         if rel ~= "" then
-          table.insert(bufs, rel)
+          local info = vim.fn.getbufinfo(b)[1]
+          table.insert(buf_entries, { path = rel, lastused = info.lastused or 0 })
           seen[rel] = true
         end
       end
     end
   end
+  table.sort(buf_entries, function(a, b) return a.lastused > b.lastused end)
+  local bufs = vim.tbl_map(function(e) return e.path end, buf_entries)
 
   -- 2. recent files from previous sessions (oldfiles persisted via shada)
   local cwd = vim.fn.getcwd() .. "/"
@@ -64,28 +67,45 @@ vim.keymap.set("n", "N", "Nzzzv")
 vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { silent = true })
 vim.keymap.set("n", "<leader>tc", "<cmd>tabclose<CR>", { silent = true })
 
+-- yank to system clipboard and notify
+local function yank_and_notify(text)
+  vim.fn.setreg("+", text)
+  -- ensure OSC 52 copy is triggered directly
+  local osc52 = vim.g.clipboard and vim.g.clipboard.copy and vim.g.clipboard.copy["+"]
+  if osc52 then osc52({ text }) end
+  vim.notify(text)
+end
+
 -- yank file path (relative to cwd)
 vim.keymap.set("n", "<leader>yf", function()
   local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
-  vim.fn.setreg("+", path)
-  vim.notify(path)
+  yank_and_notify(path)
 end, { silent = true })
 
--- yank remote git URL for current file
-vim.keymap.set("n", "<leader>yu", function()
-  local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
-  local line = vim.fn.line(".")
+-- yank remote line link
+local function git_remote_url(path, line_suffix)
   local remote = vim.fn.trim(vim.fn.system("git remote get-url origin"))
   if vim.v.shell_error ~= 0 then
     vim.notify("Not a git repo or no remote", vim.log.levels.ERROR)
     return
   end
-  -- normalize to https URL
   local url = remote:gsub("git@([^:]+):", "https://%1/"):gsub("%.git$", "")
   local branch = vim.fn.trim(vim.fn.system("git rev-parse --abbrev-ref HEAD"))
-  url = url .. "/blob/" .. branch .. "/" .. path .. "#L" .. line
-  vim.fn.setreg("+", url)
-  vim.notify(url)
+  url = url .. "/blob/" .. branch .. "/" .. path .. line_suffix
+  yank_and_notify(url)
+end
+
+vim.keymap.set({ "n", "v" }, "<leader>yl", function()
+  local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+  local mode = vim.fn.mode()
+  if mode == "v" or mode == "V" or mode == "\22" then
+    local start = vim.fn.line("v")
+    local finish = vim.fn.line(".")
+    if start > finish then start, finish = finish, start end
+    git_remote_url(path, "#L" .. start .. "-L" .. finish)
+  else
+    git_remote_url(path, "#L" .. vim.fn.line("."))
+  end
 end, { silent = true })
 
 -- git hunk navigation (gitsigns)
