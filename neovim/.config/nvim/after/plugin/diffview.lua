@@ -120,5 +120,5 @@ vim.keymap.set("n", "<leader>gl", function()
 end, { silent = true, desc = "Git history (Diffview)" })
 
 vim.keymap.set("n", "<leader>gL", function()
-  require("telescope.builtin").git_bcommits()
+  require("fzf-lua").git_bcommits()
 end, { silent = true, desc = "Git log current file" })

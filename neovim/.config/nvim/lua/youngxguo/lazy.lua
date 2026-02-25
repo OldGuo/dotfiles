@@ -19,50 +19,19 @@ end
 
 require("lazy").setup({
   {
-    "nvim-telescope/telescope.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope-frecency.nvim",
-      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    "ibhagwan/fzf-lua",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {
+      "telescope",
+      files = {
+        hidden = true,
+        rg_opts = [[--color=never --hidden --files -g "!.git" -g "!node_modules/**" -g "!bazel-out/**" -g "!bazel-bin/**" -g "!bazel-testlogs/**" -g "!bazel-applied*/**" -g "!lcov-report/**" -g "!map_tiles/**" -g "!*.generated" -g "!data/py/**"]],
+        fd_opts = [[--color=never --hidden --type f --type l --exclude .git --exclude node_modules --exclude bazel-out --exclude bazel-bin --exclude bazel-testlogs --exclude bazel-applied* --exclude lcov-report --exclude map_tiles --exclude data/py --exclude *.generated]],
+      },
+      grep = {
+        rg_opts = [[--column --line-number --no-heading --color=always --smart-case --max-columns=4096 --glob "!.git" --glob "!node_modules/**" --glob "!bazel-out/**" --glob "!bazel-bin/**" --glob "!bazel-testlogs/**" --glob "!bazel-applied*/**" --glob "!lcov-report/**" --glob "!map_tiles/**" --glob "!*.generated" --glob "!data/py/**" -e]],
+      },
     },
-    config = function()
-      require("telescope").setup({
-        defaults = {
-          sorting_strategy = "ascending",
-          layout_config = {
-            prompt_position = "top",
-          },
-          file_ignore_patterns = {
-            "node_modules/",
-            "bazel%-out/",
-            "bazel%-bin/",
-            "bazel%-testlogs/",
-            "bazel%-applied%w+/",
-            "%.git/",
-            "lcov%-report/",
-            "map_tiles/",
-            "%.generated",
-            "data/py/",
-          },
-        },
-        extensions = {
-          fzf = {
-            fuzzy = true,
-            override_generic_sorter = true,
-            override_file_sorter = true,
-            case_mode = "smart_case",
-          },
-          frecency = {
-            matcher = "fuzzy",
-            workspace_scan_cmd = { "rg", "--files" },
-            default_workspace = "CWD",
-            db_safe_mode = false,
-          },
-        },
-      })
-      require("telescope").load_extension("fzf")
-      require("telescope").load_extension("frecency")
-    end,
   },
   {
     "maxmx03/solarized.nvim",
@@ -202,10 +171,16 @@ require("lazy").setup({
     dependencies = {
       "nvim-lua/plenary.nvim",
       "sindrets/diffview.nvim",
-      "nvim-telescope/telescope.nvim",
+      "ibhagwan/fzf-lua",
       "nvim-tree/nvim-web-devicons",
     },
-    config = true,
+    opts = {
+      integrations = {
+        telescope = false,
+        diffview = true,
+        fzf_lua = true,
+      },
+    },
   },
   {
     "sindrets/diffview.nvim",
@@ -259,13 +234,13 @@ require("lazy").setup({
     "pwntester/octo.nvim",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope.nvim",
+      "ibhagwan/fzf-lua",
       "nvim-tree/nvim-web-devicons",
     },
     cmd = "Octo",
     opts = {
       default_merge_method = "squash",
-      picker = "telescope",
+      picker = "fzf-lua",
     },
   },
 })

@@ -2,58 +2,9 @@ vim.g.mapleader = " "
 -- file tree sidebar (vscode-like Ctrl+B)
 vim.keymap.set("n", "<leader>b", "<cmd>NvimTreeToggle<CR>", { silent = true })
 
--- file picker: open buffers first, then recent files (from shada), then all files
+-- single picker entry point (files by default, `$` buffers, `@`/`#` symbols)
 vim.keymap.set("n", "<C-p>", function()
-  -- 1. collect open buffers, sorted most-recently-used first
-  local buf_entries, seen = {}, {}
-  for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_loaded(b) and vim.bo[b].buflisted then
-      local name = vim.api.nvim_buf_get_name(b)
-      if name ~= "" then
-        local rel = vim.fn.fnamemodify(name, ":.")
-        if rel ~= "" then
-          local info = vim.fn.getbufinfo(b)[1]
-          table.insert(buf_entries, { path = rel, lastused = info.lastused or 0 })
-          seen[rel] = true
-        end
-      end
-    end
-  end
-  table.sort(buf_entries, function(a, b) return a.lastused > b.lastused end)
-  local bufs = vim.tbl_map(function(e) return e.path end, buf_entries)
-
-  -- 2. recent files from previous sessions (oldfiles persisted via shada)
-  local cwd = vim.fn.getcwd() .. "/"
-  local recent = {}
-  for _, f in ipairs(vim.v.oldfiles) do
-    if f:sub(1, #cwd) == cwd then
-      local rel = f:sub(#cwd + 1)
-      if not seen[rel] and vim.fn.filereadable(f) == 1 then
-        table.insert(recent, rel)
-        seen[rel] = true
-      end
-    end
-  end
-
-  -- 3. remaining workspace files via rg
-  local rest = {}
-  for _, f in ipairs(vim.fn.systemlist({ "rg", "--files" })) do
-    if not seen[f] then
-      table.insert(rest, f)
-    end
-  end
-
-  local results = vim.list_extend(vim.list_extend(bufs, recent), rest)
-
-  require("telescope.pickers").new({}, {
-    prompt_title = "Files",
-    finder = require("telescope.finders").new_table({
-      results = results,
-      entry_maker = require("telescope.make_entry").gen_from_file({ path_display = { "truncate" } }),
-    }),
-    sorter = require("telescope.config").values.file_sorter({}),
-    previewer = require("telescope.config").values.file_previewer({}),
-  }):find()
+  require("fzf-lua").global()
 end, { silent = true })
 -- splits
 vim.api.nvim_set_keymap("n", "<leader>%", ":vsplit<CR>", { noremap = true, silent = true })
@@ -116,7 +67,7 @@ vim.keymap.set("n", "<leader>gk", function() require("gitsigns").nav_hunk("prev"
 vim.keymap.set("n", "<leader>gs", "<cmd>Gdiffsplit<CR>", { silent = true })
 vim.keymap.set("n", "<leader>gg", "<cmd>Neogit<CR>", { silent = true })
 vim.keymap.set("n", "<leader>gb", function()
-  require("telescope.builtin").git_branches()
+  require("fzf-lua").git_branches()
 end, { silent = true, desc = "Git branches" })
 -- octo (GitHub PR review)
 vim.keymap.set("n", "<leader>ol", "<cmd>Octo pr search review-requested:@me is:open<CR>", { silent = true })
