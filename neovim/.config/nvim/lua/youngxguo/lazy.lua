@@ -23,6 +23,11 @@ require("lazy").setup({
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
       "telescope",
+      winopts = {
+        preview = {
+          layout = "horizontal",
+        },
+      },
       files = {
         hidden = true,
         rg_opts = [[--color=never --hidden --files -g "!.git" -g "!node_modules/**" -g "!bazel-out/**" -g "!bazel-bin/**" -g "!bazel-testlogs/**" -g "!bazel-applied*/**" -g "!lcov-report/**" -g "!map_tiles/**" -g "!*.generated" -g "!data/py/**"]],

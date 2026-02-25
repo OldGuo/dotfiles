@@ -2,9 +2,37 @@ vim.g.mapleader = " "
 -- file tree sidebar (vscode-like Ctrl+B)
 vim.keymap.set("n", "<leader>b", "<cmd>NvimTreeToggle<CR>", { silent = true })
 
+local function fzf_supports_global()
+  if vim.fn.executable("fzf") ~= 1 then
+    return false
+  end
+
+  local version = (vim.fn.systemlist({ "fzf", "--version" })[1] or "")
+  local major, minor = version:match("^(%d+)%.(%d+)")
+  major = tonumber(major)
+  minor = tonumber(minor)
+
+  if not major or not minor then
+    return false
+  end
+
+  return major > 0 or minor >= 59
+end
+
+local function fzf_global_or_files()
+  local fzf = require("fzf-lua")
+  if fzf_supports_global() then
+    fzf.global()
+    return
+  end
+
+  vim.notify_once("[fzf-lua] fzf < 0.59, using files for <C-p>", vim.log.levels.WARN)
+  fzf.files()
+end
+
 -- single picker entry point (files by default, `$` buffers, `@`/`#` symbols)
 vim.keymap.set("n", "<C-p>", function()
-  require("fzf-lua").global()
+  fzf_global_or_files()
 end, { silent = true })
 -- splits
 vim.api.nvim_set_keymap("n", "<leader>%", ":vsplit<CR>", { noremap = true, silent = true })
