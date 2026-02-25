@@ -126,21 +126,6 @@ local function win_width(winid)
   return vim.o.columns
 end
 
-local function shorten_path(path, width)
-  if path == "" then
-    return "[No Name]"
-  end
-
-  local out = vim.fn.fnamemodify(path, ":~:.")
-  if width < 90 then
-    out = vim.fn.pathshorten(out)
-  end
-  if width < 70 then
-    out = vim.fn.fnamemodify(out, ":t")
-  end
-  return out
-end
-
 local function get_file_label(bufnr, winid)
   local name = vim.api.nvim_buf_get_name(bufnr)
   local bt = vim.bo[bufnr].buftype
@@ -166,7 +151,7 @@ local function get_file_label(bufnr, winid)
     end
     return "[No Name]"
   end
-  return shorten_path(name, win_width(winid))
+  return vim.fn.fnamemodify(name, ":t")
 end
 
 local Align = { provider = "%=" }
