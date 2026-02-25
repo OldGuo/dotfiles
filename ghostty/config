@@ -1,3 +1,5 @@
+font-family = "MesloLGS Nerd Font Mono"
+# Needed for Neovim UI glyphs (Heirline separators/icons, devicons, etc.)
 font-size = 16
 theme = "Builtin Solarized Dark"
 cursor-style = block
