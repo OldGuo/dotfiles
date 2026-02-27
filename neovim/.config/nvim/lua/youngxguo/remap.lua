@@ -69,8 +69,8 @@ local function git_remote_url(path, line_suffix)
     return
   end
   local url = remote:gsub("git@([^:]+):", "https://%1/"):gsub("%.git$", "")
-  local branch = vim.fn.trim(vim.fn.system("git rev-parse --abbrev-ref HEAD"))
-  url = url .. "/blob/" .. branch .. "/" .. path .. line_suffix
+  local commit = vim.fn.trim(vim.fn.system("git rev-parse master"))
+  url = url .. "/blob/" .. commit .. "/" .. path .. line_suffix
   yank_and_notify(url)
 end
 
