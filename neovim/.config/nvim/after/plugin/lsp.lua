@@ -86,7 +86,13 @@ vim.lsp.config('ts_ls', {
   },
 })
 
-local enabled_servers = { 'ts_ls' }
+if vim.fn.executable('basedpyright-langserver') == 1 then
+  vim.lsp.config('basedpyright', {
+    root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', '.git' },
+  })
+end
+
+local enabled_servers = { 'ts_ls', 'basedpyright' }
 if vim.fn.executable('vscode-eslint-language-server') == 1 then
   vim.lsp.config('eslint', {
     cmd = { 'vscode-eslint-language-server', '--stdio' },
