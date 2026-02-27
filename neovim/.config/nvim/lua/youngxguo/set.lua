@@ -30,6 +30,8 @@ vim.opt.isfname:append("@-@")
 vim.opt.updatetime = 50
 vim.opt.autoread = true
 
+vim.opt.clipboard = "unnamedplus"
+
 vim.g.clipboard = {
   name = "OSC 52",
   copy = {
