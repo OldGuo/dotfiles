@@ -2,37 +2,49 @@ vim.g.mapleader = " "
 -- file tree sidebar (vscode-like Ctrl+B)
 vim.keymap.set("n", "<leader>b", "<cmd>NvimTreeToggle<CR>", { silent = true })
 
-local function fzf_supports_global()
-  if vim.fn.executable("fzf") ~= 1 then
-    return false
-  end
-
-  local version = (vim.fn.systemlist({ "fzf", "--version" })[1] or "")
-  local major, minor = version:match("^(%d+)%.(%d+)")
-  major = tonumber(major)
-  minor = tonumber(minor)
-
-  if not major or not minor then
-    return false
-  end
-
-  return major > 0 or minor >= 59
-end
-
-local function fzf_global_or_files()
-  local fzf = require("fzf-lua")
-  if fzf_supports_global() then
-    fzf.global()
-    return
-  end
-
-  vim.notify_once("[fzf-lua] fzf < 0.59, using files for <C-p>", vim.log.levels.WARN)
-  fzf.files()
-end
-
--- single picker entry point (files by default, `$` buffers, `@`/`#` symbols)
+-- all project files with open buffers pinned to the top
 vim.keymap.set("n", "<C-p>", function()
-  fzf_global_or_files()
+  local fzf = require("fzf-lua")
+  local fzf_config = require("fzf-lua.config")
+  local files_mod = require("fzf-lua.providers.files")
+  local bufs_mod = require("fzf-lua.providers.buffers")
+
+  -- resolve the fd/rg command fzf-lua would normally use
+  local fopts = fzf_config.normalize_opts({}, "files")
+  local files_cmd = files_mod.get_files_cmd(fopts)
+
+  -- open buffers sorted by last used (most recent first)
+  local buf_paths = {}
+  local buf_set = {}
+  for _, bufnr in ipairs(bufs_mod.list_bufs_sorted()) do
+    if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].buflisted then
+      local name = vim.api.nvim_buf_get_name(bufnr)
+      if name ~= "" then
+        local rel = vim.fn.fnamemodify(name, ":.")
+        if not rel:match("^/") and not buf_set[rel] then
+          buf_set[rel] = true
+          table.insert(buf_paths, rel)
+        end
+      end
+    end
+  end
+
+  local raw
+  if #buf_paths > 0 then
+    local escaped = {}
+    for _, b in ipairs(buf_paths) do
+      table.insert(escaped, vim.fn.shellescape(b))
+    end
+    -- print buffer paths first, then all files, deduplicate preserving order
+    raw = "{ printf '%s\\n' " .. table.concat(escaped, " ") .. " ; " .. files_cmd .. " ; } | awk '!seen[$0]++'"
+  else
+    raw = files_cmd
+  end
+
+  fzf.files({
+    raw_cmd = raw,
+    fzf_opts = { ["--tiebreak"] = "index" },
+  })
 end, { silent = true })
 -- splits
 vim.api.nvim_set_keymap("n", "<leader>%", ":vsplit<CR>", { noremap = true, silent = true })
