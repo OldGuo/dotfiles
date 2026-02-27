@@ -6,3 +6,4 @@ cursor-style = block
 shell-integration-features = no-cursor
 custom-shader = ./shaders/cursor-smear-fade.glsl
 custom-shader-animation = true
+clipboard-paste-protection = false
