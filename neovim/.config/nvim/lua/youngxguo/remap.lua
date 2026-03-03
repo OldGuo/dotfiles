@@ -2,7 +2,7 @@ vim.g.mapleader = " "
 -- file tree sidebar (vscode-like Ctrl+B)
 vim.keymap.set("n", "<leader>b", "<cmd>NvimTreeToggle<CR>", { silent = true })
 
--- all project files with open buffers pinned to the top
+-- all project files with open buffers + recent files pinned to the top
 vim.keymap.set("n", "<C-p>", function()
   local fzf = require("fzf-lua")
   local fzf_config = require("fzf-lua.config")
@@ -13,35 +13,48 @@ vim.keymap.set("n", "<C-p>", function()
   local fopts = fzf_config.normalize_opts({}, "files")
   local files_cmd = files_mod.get_files_cmd(fopts)
 
+  local pinned = {}
+  local seen = {}
+
   -- open buffers sorted by last used (most recent first)
-  local buf_paths = {}
-  local buf_set = {}
   for _, bufnr in ipairs(bufs_mod.list_bufs_sorted()) do
     if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].buflisted then
       local name = vim.api.nvim_buf_get_name(bufnr)
       if name ~= "" then
         local rel = vim.fn.fnamemodify(name, ":.")
-        if not rel:match("^/") and not buf_set[rel] then
-          buf_set[rel] = true
-          table.insert(buf_paths, rel)
+        if not rel:match("^/") and not seen[rel] then
+          seen[rel] = true
+          table.insert(pinned, rel)
         end
       end
     end
   end
 
+  -- oldfiles for cross-session persistence (via shada)
+  local cwd = vim.fn.getcwd() .. "/"
+  for _, f in ipairs(vim.v.oldfiles) do
+    if f:sub(1, #cwd) == cwd then
+      local rel = f:sub(#cwd + 1)
+      if not seen[rel] and vim.uv.fs_stat(f) then
+        seen[rel] = true
+        table.insert(pinned, rel)
+      end
+    end
+  end
+
   local raw
-  if #buf_paths > 0 then
+  if #pinned > 0 then
     local escaped = {}
-    for _, b in ipairs(buf_paths) do
+    for _, b in ipairs(pinned) do
       table.insert(escaped, vim.fn.shellescape(b))
     end
-    -- print buffer paths first, then all files, deduplicate preserving order
+    -- print pinned paths first, then all files, deduplicate preserving order
     raw = "{ printf '%s\\n' " .. table.concat(escaped, " ") .. " ; " .. files_cmd .. " ; } | awk '!seen[$0]++'"
   else
     raw = files_cmd
   end
 
-  fzf.files({
+  fzf.global({
     raw_cmd = raw,
     fzf_opts = { ["--tiebreak"] = "index" },
   })
