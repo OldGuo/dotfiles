@@ -301,6 +301,8 @@ def install_tmux():
     install_package("tmux")
     print("applying tmux config")
     link_file(REPO_ROOT / "tmux/.tmux.conf", HOME / ".tmux.conf")
+    for script in sorted((REPO_ROOT / "tmux").glob(".tmux-*.sh")):
+        link_file(script, HOME / script.name)
 
 
 def install_vscode():
