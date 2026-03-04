@@ -60,8 +60,8 @@ vim.keymap.set("n", "<C-p>", function()
   })
 end, { silent = true })
 -- splits
-vim.api.nvim_set_keymap("n", "<leader>%", ":vsplit<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", '<leader>"', ":split<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>\\", ":vsplit<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>-", ":split<CR>", { noremap = true, silent = true })
 
 -- search: center + open folds after jumping (neoscroll animates the zz)
 vim.keymap.set("n", "n", "nzzzv")
