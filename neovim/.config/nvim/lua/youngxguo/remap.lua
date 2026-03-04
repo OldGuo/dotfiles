@@ -116,6 +116,19 @@ end, { silent = true })
 vim.keymap.set("n", "<leader>gj", function() require("gitsigns").nav_hunk("next") end, { silent = true, desc = "Next git change" })
 vim.keymap.set("n", "<leader>gk", function() require("gitsigns").nav_hunk("prev") end, { silent = true, desc = "Previous git change" })
 
+-- git blame: view current line's commit in Diffview
+vim.keymap.set("n", "<leader>gc", function()
+  local file = vim.fn.expand("%:p")
+  local lnum = vim.fn.line(".")
+  local out = vim.fn.system({ "git", "blame", "-L", lnum .. "," .. lnum, "--porcelain", "--", file })
+  local sha = out:match("^(%x+)")
+  if not sha or sha:match("^0+$") then
+    vim.notify("No commit for this line (uncommitted change)", vim.log.levels.WARN)
+    return
+  end
+  vim.cmd("DiffviewOpen " .. sha .. "^.." .. sha)
+end, { silent = true, desc = "Git blame commit in Diffview" })
+
 -- git workflow
 vim.keymap.set("n", "<leader>gs", "<cmd>Gdiffsplit<CR>", { silent = true })
 vim.keymap.set("n", "<leader>gg", "<cmd>Neogit<CR>", { silent = true })
