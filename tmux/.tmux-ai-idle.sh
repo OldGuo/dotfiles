@@ -5,6 +5,15 @@ out=""
 colors=("#[fg=#eee8d5,bg=#dc322f,bold]" "#[fg=#eee8d5,bg=#ff6961,bold]")
 idx=0
 
+# Map tmux's internal session IDs ($N) to the chooser's one-based order.
+session_order=1
+session_display_idx=()
+while IFS='	' read -r sid _; do
+  sid_num="${sid#\$}"
+  session_display_idx[$sid_num]=$session_order
+  session_order=$((session_order + 1))
+done < <(tmux list-sessions -F "#{session_id}	#{session_name}" 2>/dev/null | sort -k2,2)
+
 is_ai_window() {
   local cmd="$1"
   local tty="$2"
@@ -26,7 +35,8 @@ while IFS='	' read -r window_id session_id session cmd tty activity pane_path; d
     tmux set-window-option -q -t "$window_id" @ai_idle 1 >/dev/null 2>&1
     branch=$(cd "$pane_path" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null)
     sid="${session_id#\$}"
-    out="$out${colors[$((idx % 2))]} ($sid) $session${branch:+ [$branch]} ⏳ "
+    display_idx="${session_display_idx[$sid]:-$sid}"
+    out="$out${colors[$((idx % 2))]} ($display_idx) $session${branch:+ [$branch]} ⏳ "
     idx=$((idx + 1))
   else
     tmux set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
