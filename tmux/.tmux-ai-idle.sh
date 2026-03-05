@@ -1,4 +1,7 @@
 #!/bin/bash
+# Use the same tmux binary as the running server (snap vs system).
+# $TMUX is "socket,pid,index" — resolve the binary from the server PID.
+TMUX_BIN="$(readlink -f "/proc/$(echo "$TMUX" | cut -d, -f2)/exe" 2>/dev/null || echo tmux)"
 now=$(date +%s)
 idle_threshold=3
 out=""
@@ -12,7 +15,7 @@ while IFS='	' read -r sid _; do
   sid_num="${sid#\$}"
   session_display_idx[$sid_num]=$session_order
   session_order=$((session_order + 1))
-done < <(tmux list-sessions -F "#{session_id}	#{session_name}" 2>/dev/null | sort -k2,2)
+done < <("$TMUX_BIN" list-sessions -F "#{session_id}	#{session_name}" 2>/dev/null | sort -k2,2)
 
 is_ai_window() {
   local cmd="$1"
@@ -32,14 +35,14 @@ is_ai_window() {
 
 while IFS='	' read -r window_id session_id session cmd tty activity pane_path; do
   if is_ai_window "$cmd" "$tty" && [ $((now - activity)) -gt "$idle_threshold" ]; then
-    tmux set-window-option -q -t "$window_id" @ai_idle 1 >/dev/null 2>&1
+    "$TMUX_BIN" set-window-option -q -t "$window_id" @ai_idle 1 >/dev/null 2>&1
     branch=$(cd "$pane_path" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null)
     sid="${session_id#\$}"
     display_idx="${session_display_idx[$sid]:-$sid}"
     out="$out${colors[$((idx % 2))]} ($display_idx) $session${branch:+ [$branch]} ⏳ "
     idx=$((idx + 1))
   else
-    tmux set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
+    "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
   fi
-done < <(tmux list-windows -a -F "#{window_id}	#{session_id}	#{session_name}	#{pane_current_command}	#{pane_tty}	#{window_activity}	#{pane_current_path}")
+done < <("$TMUX_BIN" list-windows -a -F "#{window_id}	#{session_id}	#{session_name}	#{pane_current_command}	#{pane_tty}	#{window_activity}	#{pane_current_path}")
 [ -n "$out" ] && printf ' %s ' "$out"
