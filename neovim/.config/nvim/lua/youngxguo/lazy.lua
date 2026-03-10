@@ -27,7 +27,11 @@ require("lazy").setup({
       winopts = {
         preview = {
           layout = "vertical",
+          vertical = "down:50%",
         },
+      },
+      fzf_opts = {
+        ["--layout"] = "reverse",
       },
       files = {
         hidden = true,
