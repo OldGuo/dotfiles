@@ -175,7 +175,6 @@ require("lazy").setup({
     },
   },
   { "numToStr/Comment.nvim", opts = {} },
-  { "christoomey/vim-tmux-navigator" },
   { "tpope/vim-fugitive" },
   {
     "NeogitOrg/neogit",

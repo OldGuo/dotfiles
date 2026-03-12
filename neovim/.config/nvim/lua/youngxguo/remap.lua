@@ -59,6 +59,33 @@ vim.keymap.set("n", "<C-p>", function()
     fzf_opts = { ["--tiebreak"] = "index" },
   })
 end, { silent = true })
+-- vim/tmux pane navigation
+-- Resolve the tmux binary from the running server process (once) to avoid
+-- version mismatch between snap and system packages.
+local tmux_bin = (function()
+  local pid = (vim.env.TMUX or ""):match(",(%d+),")
+  if pid then
+    local exe = vim.uv.fs_readlink("/proc/" .. pid .. "/exe")
+    if exe then return exe end
+  end
+  return "tmux"
+end)()
+
+local tmux_dir_map = { h = "L", j = "D", k = "U", l = "R" }
+
+local function tmux_navigate(direction)
+  local nr = vim.fn.winnr()
+  vim.cmd("wincmd " .. direction)
+  if nr == vim.fn.winnr() then
+    vim.fn.system({ tmux_bin, "select-pane", "-" .. tmux_dir_map[direction] })
+  end
+end
+
+vim.keymap.set("n", "<C-h>", function() tmux_navigate("h") end, { silent = true })
+vim.keymap.set("n", "<C-j>", function() tmux_navigate("j") end, { silent = true })
+vim.keymap.set("n", "<C-k>", function() tmux_navigate("k") end, { silent = true })
+vim.keymap.set("n", "<C-l>", function() tmux_navigate("l") end, { silent = true })
+
 -- splits
 vim.api.nvim_set_keymap("n", "<leader>\\", ":vsplit<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>-", ":split<CR>", { noremap = true, silent = true })
