@@ -36,10 +36,9 @@ is_ai_window() {
 while IFS='	' read -r window_id session_id session cmd tty activity pane_path; do
   if is_ai_window "$cmd" "$tty" && [ $((now - activity)) -gt "$idle_threshold" ]; then
     "$TMUX_BIN" set-window-option -q -t "$window_id" @ai_idle 1 >/dev/null 2>&1
-    branch=$(cd "$pane_path" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null)
     sid="${session_id#\$}"
     display_idx="${session_display_idx[$sid]:-$sid}"
-    out="$out${colors[$((idx % 2))]} $display_idx${branch:+ $branch} ⏳ "
+    out="$out${colors[$((idx % 2))]} $display_idx ⏳ "
     idx=$((idx + 1))
   else
     "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
