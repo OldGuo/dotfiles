@@ -33,15 +33,33 @@ is_ai_window() {
   return 1
 }
 
-while IFS='	' read -r window_id session_id session cmd tty activity pane_path; do
-  if is_ai_window "$cmd" "$tty" && [ $((now - activity)) -gt "$idle_threshold" ]; then
+# Track which windows have an idle AI pane.
+declare -A idle_windows   # window_id -> session_id
+declare -A all_windows    # all window_ids seen
+
+# Use list-panes (not list-windows) so non-active panes are checked too.
+while IFS='	' read -r window_id session_id cmd tty; do
+  all_windows[$window_id]=1
+  [ -n "${idle_windows[$window_id]}" ] && continue
+  if is_ai_window "$cmd" "$tty"; then
+    # Per-pane idle: use the TTY device mtime (last program output).
+    tty_mtime=$(stat -c %Y "$tty" 2>/dev/null || echo "$now")
+    if [ $((now - tty_mtime)) -gt "$idle_threshold" ]; then
+      idle_windows[$window_id]="$session_id"
+    fi
+  fi
+done < <("$TMUX_BIN" list-panes -a -F "#{window_id}	#{session_id}	#{pane_current_command}	#{pane_tty}")
+
+for window_id in "${!all_windows[@]}"; do
+  if [ -n "${idle_windows[$window_id]}" ]; then
     "$TMUX_BIN" set-window-option -q -t "$window_id" @ai_idle 1 >/dev/null 2>&1
-    sid="${session_id#\$}"
+    sid="${idle_windows[$window_id]#\$}"
     display_idx="${session_display_idx[$sid]:-$sid}"
     out="$out${colors[$((idx % 2))]} $display_idx ⏳ "
     idx=$((idx + 1))
   else
     "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
   fi
-done < <("$TMUX_BIN" list-windows -a -F "#{window_id}	#{session_id}	#{session_name}	#{pane_current_command}	#{pane_tty}	#{window_activity}	#{pane_current_path}")
+done
+
 [ -n "$out" ] && printf ' %s ' "$out"
