@@ -83,6 +83,19 @@ for window_id in "${!all_windows[@]}"; do
   fi
 done
 
+# Set/unset @session_ai_idle per session for choose-tree styling
+declare -A idle_sessions
+for wid in "${!idle_windows[@]}"; do
+  idle_sessions["${idle_windows[$wid]}"]=1
+done
+while IFS= read -r sid; do
+  if [ -n "${idle_sessions[$sid]}" ]; then
+    "$TMUX_BIN" set-option -q -t "$sid" @session_ai_idle 1 >/dev/null 2>&1
+  else
+    "$TMUX_BIN" set-option -q -u -t "$sid" @session_ai_idle >/dev/null 2>&1
+  fi
+done < <("$TMUX_BIN" list-sessions -F '#{session_id}' 2>/dev/null)
+
 [ "$idx" -eq 0 ] && exit 0
 
 # Decide format based on available space (windows take precedent).
