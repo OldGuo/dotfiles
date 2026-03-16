@@ -152,6 +152,17 @@ require("lazy").setup({
   },
   { "lewis6991/gitsigns.nvim" },
   {
+    "akinsho/git-conflict.nvim",
+    version = "*",
+    opts = {
+      highlights = {
+        incoming = "DiffAdd",
+        current = "DiffChange",
+        ancestor = "DiffText",
+      },
+    },
+  },
+  {
     "nvim-tree/nvim-tree.lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
