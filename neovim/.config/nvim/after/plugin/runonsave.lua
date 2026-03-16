@@ -8,6 +8,9 @@ local fidget = require("fidget")
 -- Cache: project_root -> { commands = {...}, failed = bool }
 local cache = {}
 
+-- Track running jobs: cmd_string -> job_id
+local running_jobs = {}
+
 -- Strip JSONC comments while preserving // inside quoted strings.
 local function strip_jsonc_comments(text)
   local result = {}
@@ -113,6 +116,14 @@ vim.api.nvim_create_autocmd("BufWritePost", {
         else
           local cmd = entry.cmd:gsub("%${file}", bufpath)
           local short_cmd = cmd:match("[^/]+$") or cmd
+
+          -- Kill previous run silently if still going
+          local prev_job = running_jobs[cmd]
+          if prev_job then
+            pcall(vim.fn.jobstop, prev_job)
+            running_jobs[cmd] = nil
+          end
+
           local ok, handle = pcall(fidget.progress.handle.create, {
             title = short_cmd,
             lsp_client = { name = "runonsave" },
@@ -125,6 +136,15 @@ vim.api.nvim_create_autocmd("BufWritePost", {
             cwd = project_root,
             on_exit = function(_, code)
               vim.schedule(function()
+                local was_current = running_jobs[cmd] == job_id
+                if was_current then
+                  running_jobs[cmd] = nil
+                end
+                -- If we're not the current job, we were killed by a re-trigger — stay silent
+                if not was_current then
+                  if handle then handle:cancel() end
+                  return
+                end
                 if handle then
                   if code ~= 0 then
                     handle.message = "failed (exit " .. code .. ")"
@@ -143,6 +163,8 @@ vim.api.nvim_create_autocmd("BufWritePost", {
           if job_id <= 0 then
             vim.notify("runonsave: failed to start job (id=" .. job_id .. ") — " .. cmd, vim.log.levels.ERROR)
             if handle then handle:cancel() end
+          else
+            running_jobs[cmd] = job_id
           end
         end
       end
