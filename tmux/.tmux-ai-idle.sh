@@ -2,6 +2,15 @@
 # Use the same tmux binary as the running server (snap vs system).
 # $TMUX is "socket,pid,index" — resolve the binary from the server PID.
 TMUX_BIN="$(readlink -f "/proc/$(echo "$TMUX" | cut -d, -f2)/exe" 2>/dev/null || echo tmux)"
+
+# Snap updates can wipe the private /tmp that holds the socket.
+# Recreate the directory so the server can re-bind.
+if [ -n "$TMUX" ]; then
+  _socket="${TMUX%%,*}"
+  _socket_dir="$(dirname "$_socket")"
+  [ -d "$_socket_dir" ] || mkdir -p "$_socket_dir" 2>/dev/null
+fi
+
 now=$(date +%s)
 idle_threshold=15
 colors=("#[fg=#eee8d5,bg=#dc322f,bold]" "#[fg=#eee8d5,bg=#ff6961,bold]")
