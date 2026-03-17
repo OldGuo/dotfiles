@@ -24,7 +24,7 @@ while IFS='	' read -r sid sname; do
   session_display_idx[$sid_num]=$session_order
   session_names[$sid_num]="$sname"
   session_order=$((session_order + 1))
-done < <("$TMUX_BIN" list-sessions -F "#{session_id}	#{session_name}" 2>/dev/null | sort -k2,2)
+done < <("$TMUX_BIN" list-sessions -F "#{session_id}	#{session_name}" 2>/dev/null)
 
 is_ai_window() {
   local cmd="$1"
