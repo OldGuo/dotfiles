@@ -156,6 +156,23 @@ vim.keymap.set("n", "<leader>gc", function()
   vim.cmd("DiffviewOpen " .. sha .. "^.." .. sha)
 end, { silent = true, desc = "Git blame commit in Diffview" })
 
+-- git blame: open current line's commit on remote
+vim.keymap.set("n", "<leader>gC", function()
+  local file = vim.fn.expand("%:p")
+  local lnum = vim.fn.line(".")
+  local out = vim.fn.system({ "git", "blame", "-L", lnum .. "," .. lnum, "--porcelain", "--", file })
+  local sha = out:match("^(%x+)")
+  if not sha or sha:match("^0+$") then
+    vim.notify("No commit for this line (uncommitted change)", vim.log.levels.WARN)
+    return
+  end
+  local remote_url = vim.fn.system("git remote get-url origin"):gsub("%s+$", "")
+  -- normalize to https URL
+  remote_url = remote_url:gsub("^git@([^:]+):", "https://%1/"):gsub("%.git$", "")
+  local url = remote_url .. "/commit/" .. sha
+  yank_and_notify(url)
+end, { silent = true, desc = "Open line's commit on remote" })
+
 -- git workflow
 vim.keymap.set("n", "<leader>gs", "<cmd>Gdiffsplit<CR>", { silent = true })
 vim.keymap.set("n", "<leader>gg", "<cmd>Neogit<CR>", { silent = true })
