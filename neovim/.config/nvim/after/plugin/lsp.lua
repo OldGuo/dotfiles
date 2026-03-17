@@ -24,8 +24,21 @@ vim.api.nvim_create_autocmd('LspAttach', {
     local opts = {buffer = event.buf}
     vim.keymap.set('n', '<C-]>', '<cmd>lua vim.lsp.buf.definition()<cr>', opts)
     vim.keymap.set('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<cr>', opts)
-    vim.keymap.set('n', 'gh', '<cmd>lua vim.lsp.buf.hover()<cr>', opts)
+    vim.keymap.set('n', 'gh', function()
+      local row = vim.api.nvim_win_get_cursor(0)[1] - 1
+      if #vim.diagnostic.get(0, { lnum = row }) > 0 then
+        vim.diagnostic.open_float()
+      else
+        vim.lsp.buf.hover()
+      end
+    end, opts)
     vim.keymap.set('n', 'gr', '<cmd>lua vim.lsp.buf.references()<cr>', opts)
+    vim.keymap.set('n', '<leader>dd', function()
+      require("fzf-lua").diagnostics_document()
+    end, opts)
+    vim.keymap.set('n', '<leader>dw', function()
+      require("fzf-lua").diagnostics_workspace()
+    end, opts)
     vim.keymap.set('n', '<leader>pr', function()
       require("fzf-lua").lsp_references()
     end, opts)
