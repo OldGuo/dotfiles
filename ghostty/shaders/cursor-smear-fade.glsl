@@ -60,54 +60,78 @@ float ease(float x) {
  return pow(1.0 - x, 3.0);
 }
 
-const float DURATION = 0.15; //IN SECONDS
+const float DURATION = 0.3; // longer trail lifetime
+
+// Soft glow falloff from an SDF distance
+float glow(float sdf, float radius, float intensity) {
+ return intensity * exp(-sdf * sdf / (radius * radius));
+}
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
  #if !defined(WEB)
  fragColor = texture(iChannel0, fragCoord.xy / iResolution.xy);
  #endif
- // Normalization for fragCoord to a space of -1 to 1;
  vec2 vu = normalize(fragCoord, 1.);
  vec2 offsetFactor = vec2(-.5, 0.5);
 
- // Normalization for cursor position and size;
- // cursor xy has the postion in a space of -1 to 1;
- // zw has the width and height
  vec4 currentCursor = vec4(normalize(iCurrentCursor.xy, 1.), normalize(iCurrentCursor.zw, 0.));
  vec4 previousCursor = vec4(normalize(iPreviousCursor.xy, 1.), normalize(iPreviousCursor.zw, 0.));
 
- // When drawing a parellelogram between cursors for the trail i need to determine where to start at the top-left or top-right vertex of the cursor
  float vertexFactor = determineStartVertexFactor(currentCursor.xy, previousCursor.xy);
  float invertedVertexFactor = 1.0 - vertexFactor;
 
- // Set every vertex of my parellogram
- vec2 v0 = vec2(currentCursor.x + currentCursor.z * vertexFactor, currentCursor.y - currentCursor.w);
- vec2 v1 = vec2(currentCursor.x + currentCursor.z * invertedVertexFactor, currentCursor.y);
- vec2 v2 = vec2(previousCursor.x + currentCursor.z * invertedVertexFactor, previousCursor.y);
- vec2 v3 = vec2(previousCursor.x + currentCursor.z * vertexFactor, previousCursor.y - previousCursor.w);
+ // Wider trail: expand parallelogram vertices outward
+ float trailExpand = 0.003;
+ vec2 dir = previousCursor.xy - currentCursor.xy;
+ vec2 perp = vec2(-dir.y, dir.x);
+ float perpLen = length(perp);
+ perp = perpLen > 0.001 ? perp / perpLen : vec2(0.0, 0.0);
+
+ vec2 v0 = vec2(currentCursor.x + currentCursor.z * vertexFactor, currentCursor.y - currentCursor.w) + perp * trailExpand;
+ vec2 v1 = vec2(currentCursor.x + currentCursor.z * invertedVertexFactor, currentCursor.y) - perp * trailExpand;
+ vec2 v2 = vec2(previousCursor.x + currentCursor.z * invertedVertexFactor, previousCursor.y) - perp * trailExpand;
+ vec2 v3 = vec2(previousCursor.x + currentCursor.z * vertexFactor, previousCursor.y - previousCursor.w) + perp * trailExpand;
 
  float sdfCurrentCursor = getSdfRectangle(vu, currentCursor.xy - (currentCursor.zw * offsetFactor), currentCursor.zw * 0.5);
  float sdfTrail = getSdfParallelogram(vu, v0, v1, v2, v3);
 
  float progress = clamp((iTime - iTimeCursorChange) / DURATION, 0.0, 1.0);
  float easedProgress = ease(progress);
- // Distance between cursors determine the total length of the parallelogram;
+
  vec2 centerCC = getRectangleCenter(currentCursor);
  vec2 centerCP = getRectangleCenter(previousCursor);
  float lineLength = distance(centerCC, centerCP);
 
  vec4 newColor = vec4(fragColor);
- // Compute fade factor based on distance along the trail
+
+ // Fade factor along the trail
  float fadeFactor = 1.0 - smoothstep(lineLength, sdfCurrentCursor, easedProgress * lineLength);
 
- // Apply fading effect to trail color
- vec4 fadedTrailColor = iCurrentCursorColor * fadeFactor;
+ // Shift trail color slightly toward a brighter/warmer hue for energy
+ vec4 trailColor = iCurrentCursorColor;
+ trailColor.rgb = mix(trailColor.rgb, trailColor.rgb + vec3(0.15, 0.08, 0.25), 0.4);
+ vec4 fadedTrailColor = trailColor * fadeFactor;
 
- // Blend trail with fade effect
+ // Trail body
  newColor = mix(newColor, fadedTrailColor, antialising(sdfTrail));
+
+ // Trail glow: soft halo around the trail
+ float trailGlowRadius = 0.012;
+ float trailGlowAmount = glow(max(sdfTrail, 0.0), trailGlowRadius, 0.6) * fadeFactor;
+ vec3 trailGlowColor = trailColor.rgb * 1.5;
+ newColor.rgb += trailGlowColor * trailGlowAmount * (1.0 - easedProgress);
+
  // Draw current cursor
  newColor = mix(newColor, iCurrentCursorColor, antialising(sdfCurrentCursor));
  newColor = mix(newColor, fragColor, step(sdfCurrentCursor, 0.));
+
+ // Cursor glow: pulsing halo around cursor
+ float pulse = 0.7 + 0.3 * sin(iTime * 4.0);
+ float cursorGlowRadius = 0.015 * pulse;
+ float cursorGlowAmount = glow(max(sdfCurrentCursor, 0.0), cursorGlowRadius, 0.5);
+ vec3 cursorGlowColor = iCurrentCursorColor.rgb * 1.8;
+ newColor.rgb += cursorGlowColor * cursorGlowAmount;
+
  fragColor = mix(fragColor, newColor, step(sdfCurrentCursor, easedProgress * lineLength));
 }
