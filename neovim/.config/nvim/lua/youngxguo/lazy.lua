@@ -25,9 +25,11 @@ require("lazy").setup({
       "telescope",
       formatter = "path.filename_first",
       winopts = {
+        height = 0.95,
+        width = 0.95,
         preview = {
-          layout = "vertical",
-          vertical = "down:50%",
+          layout = "horizontal",
+          horizontal = "right:55%",
         },
       },
       fzf_opts = {
