@@ -13,18 +13,18 @@ fi
 
 now=$(date +%s)
 idle_threshold=15
-colors=("#[fg=#eee8d5,bg=#dc322f,bold]" "#[fg=#eee8d5,bg=#ff6961,bold]")
+idle_colors=("#[fg=#eee8d5,bg=#dc322f,bold]" "#[fg=#eee8d5,bg=#ff6961,bold]")
 
-# Map tmux's internal session IDs ($N) to the chooser's one-based order and name.
+# Map tmux session IDs to one-based display index and name (for status-right labels).
 session_order=1
 declare -A session_display_idx
 declare -A session_names
-while IFS='	' read -r sid sname; do
+while IFS='|' read -r sid sname; do
   sid_num="${sid#\$}"
   session_display_idx[$sid_num]=$session_order
   session_names[$sid_num]="$sname"
   session_order=$((session_order + 1))
-done < <("$TMUX_BIN" list-sessions -F "#{session_id}	#{session_name}" 2>/dev/null)
+done < <("$TMUX_BIN" list-sessions -F "#{session_id}|#{session_name}" 2>/dev/null)
 
 is_ai_window() {
   local cmd="$1"
@@ -42,78 +42,99 @@ is_ai_window() {
   return 1
 }
 
-# Track which windows have an idle AI pane.
-declare -A idle_windows   # window_id -> session_id
-declare -A idle_paths     # window_id -> pane_current_path
-declare -A all_windows    # window_id -> current @ai_idle value
+# Track which windows have an idle or thinking AI pane.
+declare -A idle_windows      # window_id -> session_id
+declare -A thinking_windows  # window_id -> session_id
+declare -A idle_paths        # window_id -> pane_current_path
+declare -A all_windows       # window_id -> current @ai_idle value
+declare -A all_windows_think # window_id -> current @ai_thinking value
 
 # Use list-panes (not list-windows) so non-active panes are checked too.
-# Include @ai_idle to skip no-op set-window-option calls.
-while IFS='	' read -r window_id session_id cmd tty pane_path ai_idle; do
+# Include @ai_idle and @ai_thinking to skip no-op set-window-option calls.
+while IFS='|' read -r window_id session_id cmd tty pane_path ai_idle ai_thinking; do
   all_windows[$window_id]="$ai_idle"
-  [ -n "${idle_windows[$window_id]}" ] && continue
+  all_windows_think[$window_id]="$ai_thinking"
+  [ -n "${idle_windows[$window_id]}" ] || [ -n "${thinking_windows[$window_id]}" ] && continue
   if is_ai_window "$cmd" "$tty"; then
     # Per-pane idle: use the TTY device mtime (last program output).
     tty_mtime=$(stat -c %Y "$tty" 2>/dev/null || echo "$now")
     if [ $((now - tty_mtime)) -gt "$idle_threshold" ]; then
       idle_windows[$window_id]="$session_id"
       idle_paths[$window_id]="$pane_path"
+    else
+      thinking_windows[$window_id]="$session_id"
     fi
   fi
-done < <("$TMUX_BIN" list-panes -a -F "#{window_id}	#{session_id}	#{pane_current_command}	#{pane_tty}	#{pane_current_path}	#{@ai_idle}")
+done < <("$TMUX_BIN" list-panes -a -F "#{window_id}|#{session_id}|#{pane_current_command}|#{pane_tty}|#{pane_current_path}|#{@ai_idle}|#{@ai_thinking}")
 
-# Build both long (session_name branch) and short (index) formats.
-long_out=""
-short_out=""
-long_width=0
-idx=0
-
+# Update @ai_idle and @ai_thinking window options.
 for window_id in "${!all_windows[@]}"; do
   if [ -n "${idle_windows[$window_id]}" ]; then
-    # Only set if not already marked idle.
     [ "${all_windows[$window_id]}" != "1" ] && \
       "$TMUX_BIN" set-window-option -q -t "$window_id" @ai_idle 1 >/dev/null 2>&1
-    sid="${idle_windows[$window_id]#\$}"
-    display_idx="${session_display_idx[$sid]:-$sid}"
-    sname="${session_names[$sid]:-}"
-    branch=$(cd "${idle_paths[$window_id]}" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null)
-
-    label="(${display_idx}) ${sname}${branch:+ $branch}"
-    color="${colors[$((idx % 2))]}"
-    long_out="${long_out}${color} ⏳ ${label} "
-    short_out="${short_out}${color} ⏳ (${display_idx}) "
-    # +6: leading space (1) + ⏳ (2 columns) + space after emoji (1) + trailing space (1) + space before emoji (1)
-    long_width=$((long_width + ${#label} + 6))
-    idx=$((idx + 1))
-  else
-    # Only unset if currently marked idle.
+    [ "${all_windows_think[$window_id]}" = "1" ] && \
+      "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_thinking >/dev/null 2>&1
+  elif [ -n "${thinking_windows[$window_id]}" ]; then
+    [ "${all_windows_think[$window_id]}" != "1" ] && \
+      "$TMUX_BIN" set-window-option -q -t "$window_id" @ai_thinking 1 >/dev/null 2>&1
     [ "${all_windows[$window_id]}" = "1" ] && \
       "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
+  else
+    [ "${all_windows[$window_id]}" = "1" ] && \
+      "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
+    [ "${all_windows_think[$window_id]}" = "1" ] && \
+      "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_thinking >/dev/null 2>&1
   fi
 done
 
-# Set/unset @session_ai_idle per session for choose-tree styling
+# Set/unset @session_ai_idle and @session_ai_thinking per session for choose-tree styling.
 declare -A idle_sessions
+declare -A thinking_sessions
 for wid in "${!idle_windows[@]}"; do
   idle_sessions["${idle_windows[$wid]}"]=1
 done
-while IFS= read -r sid; do
+for wid in "${!thinking_windows[@]}"; do
+  thinking_sessions["${thinking_windows[$wid]}"]=1
+done
+for sid_num in "${!session_display_idx[@]}"; do
+  sid="\$$sid_num"
   if [ -n "${idle_sessions[$sid]}" ]; then
     "$TMUX_BIN" set-option -q -t "$sid" @session_ai_idle 1 >/dev/null 2>&1
   else
     "$TMUX_BIN" set-option -q -u -t "$sid" @session_ai_idle >/dev/null 2>&1
   fi
-done < <("$TMUX_BIN" list-sessions -F '#{session_id}' 2>/dev/null)
+  if [ -n "${thinking_sessions[$sid]}" ]; then
+    "$TMUX_BIN" set-option -q -t "$sid" @session_ai_thinking 1 >/dev/null 2>&1
+  else
+    "$TMUX_BIN" set-option -q -u -t "$sid" @session_ai_thinking >/dev/null 2>&1
+  fi
+done
 
-[ "$idx" -eq 0 ] && exit 0
+# Output idle-only labels to status-right.
+[ "${#idle_windows[@]}" -eq 0 ] && exit 0
 
-# Decide format based on available space (windows take precedent).
+long_out=""
+short_out=""
+long_width=0
+idx=0
+for window_id in "${!idle_windows[@]}"; do
+  sid="${idle_windows[$window_id]#\$}"
+  display_idx="${session_display_idx[$sid]:-$sid}"
+  sname="${session_names[$sid]:-}"
+  branch=$(cd "${idle_paths[$window_id]}" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  label="(${display_idx}) ${sname}${branch:+ $branch}"
+  color="${idle_colors[$((idx % 2))]}"
+  long_out="${long_out}${color} ! ${label} "
+  short_out="${short_out}${color} ! (${display_idx}) "
+  long_width=$((long_width + ${#label} + 5))
+  idx=$((idx + 1))
+done
+
 client_width=$("$TMUX_BIN" display -p '#{client_width}' 2>/dev/null || echo 200)
 win_list_width=0
 while IFS= read -r wname; do
   win_list_width=$((win_list_width + ${#wname} + 5))
 done < <("$TMUX_BIN" list-windows -F "#{window_name}" 2>/dev/null)
-# 48 = status-left-length, 25 ≈ datetime portion of status-right
 available=$((client_width - 48 - win_list_width - 25))
 
 if [ "$long_width" -le "$available" ]; then
