@@ -68,10 +68,13 @@ while IFS='|' read -r window_id session_id cmd tty pane_path ai_idle ai_thinking
 done < <("$TMUX_BIN" list-panes -a -F "#{window_id}|#{session_id}|#{pane_current_command}|#{pane_tty}|#{pane_current_path}|#{@ai_idle}|#{@ai_thinking}")
 
 # Update @ai_idle and @ai_thinking window options.
+declare -A newly_idle
 for window_id in "${!all_windows[@]}"; do
   if [ -n "${idle_windows[$window_id]}" ]; then
-    [ "${all_windows[$window_id]}" != "1" ] && \
+    if [ "${all_windows[$window_id]}" != "1" ]; then
       "$TMUX_BIN" set-window-option -q -t "$window_id" @ai_idle 1 >/dev/null 2>&1
+      newly_idle[$window_id]=1
+    fi
     [ "${all_windows_think[$window_id]}" = "1" ] && \
       "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_thinking >/dev/null 2>&1
   elif [ -n "${thinking_windows[$window_id]}" ]; then
@@ -110,6 +113,30 @@ for sid_num in "${!session_display_idx[@]}"; do
   fi
 done
 
+# Build idle label for each window (shared by status-right and notifications).
+declare -A idle_labels      # window_id -> "(idx) name branch"
+declare -A idle_short_labels # window_id -> "(idx)"
+for window_id in "${!idle_windows[@]}"; do
+  sid="${idle_windows[$window_id]#\$}"
+  display_idx="${session_display_idx[$sid]:-$sid}"
+  sname="${session_names[$sid]:-}"
+  branch=$(cd "${idle_paths[$window_id]}" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  idle_labels[$window_id]="(${display_idx}) ${sname}${branch:+ $branch}"
+  idle_short_labels[$window_id]="(${display_idx})"
+done
+
+# Send desktop notification for windows that just became idle.
+if [ "${#newly_idle[@]}" -gt 0 ]; then
+  notif_msg="❕ AI Idle"
+  for wid in "${!newly_idle[@]}"; do
+    notif_msg="${notif_msg}
+ • ${idle_labels[$wid]}"
+  done
+  while IFS= read -r ctty; do
+    printf '\ePtmux;\e\e]9;%s\a\e\\' "$notif_msg" > "$ctty" 2>/dev/null
+  done < <("$TMUX_BIN" list-clients -F '#{client_tty}' 2>/dev/null)
+fi
+
 # Output idle-only labels to status-right.
 [ "${#idle_windows[@]}" -eq 0 ] && exit 0
 
@@ -118,14 +145,10 @@ short_out=""
 long_width=0
 idx=0
 for window_id in "${!idle_windows[@]}"; do
-  sid="${idle_windows[$window_id]#\$}"
-  display_idx="${session_display_idx[$sid]:-$sid}"
-  sname="${session_names[$sid]:-}"
-  branch=$(cd "${idle_paths[$window_id]}" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null)
-  label="(${display_idx}) ${sname}${branch:+ $branch}"
+  label="${idle_labels[$window_id]}"
   color="${idle_colors[$((idx % 2))]}"
   long_out="${long_out}${color} ! ${label} "
-  short_out="${short_out}${color} ! (${display_idx}) "
+  short_out="${short_out}${color} ! ${idle_short_labels[$window_id]} "
   long_width=$((long_width + ${#label} + 5))
   idx=$((idx + 1))
 done
