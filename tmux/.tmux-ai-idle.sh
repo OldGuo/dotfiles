@@ -14,6 +14,7 @@ fi
 now=$(date +%s)
 idle_threshold=15
 idle_colors=("#[fg=#eee8d5,bg=#dc322f,bold]" "#[fg=#eee8d5,bg=#ff6961,bold]")
+thinking_colors=("#[fg=#002b36,bg=#ffd700,bold]" "#[fg=#002b36,bg=#f0ad4e,bold]")
 
 # Map tmux session IDs to one-based display index and name (for status-right labels).
 session_order=1
@@ -125,6 +126,14 @@ for window_id in "${!idle_windows[@]}"; do
   idle_short_labels[$window_id]="(${display_idx})"
 done
 
+# Build thinking label for each window (session number only).
+declare -A thinking_labels
+for window_id in "${!thinking_windows[@]}"; do
+  sid="${thinking_windows[$window_id]#\$}"
+  display_idx="${session_display_idx[$sid]:-$sid}"
+  thinking_labels[$window_id]="(${display_idx})"
+done
+
 # Send desktop notification for windows that just became idle.
 if [ "${#newly_idle[@]}" -gt 0 ]; then
   notif_msg="❕ AI Idle"
@@ -137,21 +146,44 @@ if [ "${#newly_idle[@]}" -gt 0 ]; then
   done < <("$TMUX_BIN" list-clients -F '#{client_tty}' 2>/dev/null)
 fi
 
-# Output idle-only labels to status-right.
-[ "${#idle_windows[@]}" -eq 0 ] && exit 0
+# Output thinking + idle labels to status-right.
+[ "${#idle_windows[@]}" -eq 0 ] && [ "${#thinking_windows[@]}" -eq 0 ] && exit 0
+
+# Sort window IDs by session display index for stable output order.
+sort_by_session_idx() {
+  local -n _map=$1
+  for wid in "${!_map[@]}"; do
+    sid="${_map[$wid]#\$}"
+    printf '%d\t%s\n' "${session_display_idx[$sid]:-0}" "$wid"
+  done | sort -n | cut -f2
+}
+
+thinking_out=""
+idx=0
+while IFS= read -r window_id; do
+  label="${thinking_labels[$window_id]}"
+  color="${thinking_colors[$((idx % 2))]}"
+  thinking_out="${thinking_out}${color} 💭 ${label} "
+  idx=$((idx + 1))
+done < <(sort_by_session_idx thinking_windows)
 
 long_out=""
 short_out=""
 long_width=0
 idx=0
-for window_id in "${!idle_windows[@]}"; do
+while IFS= read -r window_id; do
   label="${idle_labels[$window_id]}"
   color="${idle_colors[$((idx % 2))]}"
   long_out="${long_out}${color} ! ${label} "
   short_out="${short_out}${color} ! ${idle_short_labels[$window_id]} "
   long_width=$((long_width + ${#label} + 5))
   idx=$((idx + 1))
-done
+done < <(sort_by_session_idx idle_windows)
+
+if [ "${#idle_windows[@]}" -eq 0 ]; then
+  printf ' %s ' "$thinking_out"
+  exit 0
+fi
 
 client_width=$("$TMUX_BIN" display -p '#{client_width}' 2>/dev/null || echo 200)
 win_list_width=0
@@ -161,7 +193,7 @@ done < <("$TMUX_BIN" list-windows -F "#{window_name}" 2>/dev/null)
 available=$((client_width - 48 - win_list_width - 25))
 
 if [ "$long_width" -le "$available" ]; then
-  printf ' %s ' "$long_out"
+  printf ' %s%s ' "$thinking_out" "$long_out"
 else
-  printf ' %s ' "$short_out"
+  printf ' %s%s ' "$thinking_out" "$short_out"
 fi
