@@ -23,9 +23,7 @@ require("lazy").setup({
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
       "telescope",
-      defaults = {
-        formatter = "path.filename_first",
-      },
+      defaults = {},
       winopts = {
         height = 0.95,
         width = 0.95,
