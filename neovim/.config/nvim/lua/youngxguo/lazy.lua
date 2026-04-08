@@ -25,7 +25,6 @@ require("lazy").setup({
       "telescope",
       defaults = {
         formatter = "path.filename_first",
-        path_shorten = 1,
       },
       winopts = {
         height = 0.95,
