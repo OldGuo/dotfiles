@@ -1,4 +1,4 @@
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
@@ -6,3 +6,6 @@ sandbox_mode = "danger-full-access"
 [notice]
 hide_full_access_warning = true
 hide_rate_limit_model_nudge = true
+
+[plugins."github@openai-curated"]
+enabled = true
