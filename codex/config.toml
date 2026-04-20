@@ -9,3 +9,17 @@ hide_rate_limit_model_nudge = true
 
 [plugins."github@openai-curated"]
 enabled = true
+
+[marketplaces.openai-bundled]
+last_updated = "2026-04-19T16:50:14Z"
+source_type = "local"
+source = "/Users/young/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[projects."/Users/young/Documents/code/dotfiles"]
+trust_level = "trusted"
+
+[projects."/Users/young/Documents/code/viz"]
+trust_level = "trusted"
+
+[tui]
+status_line = ["model-with-reasoning", "current-dir", "model-name", "project-root", "git-branch", "context-remaining", "context-remaining-percent", "context-used"]
