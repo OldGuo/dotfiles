@@ -151,7 +151,7 @@ local function get_file_label(bufnr, winid)
     end
     return "[No Name]"
   end
-  return vim.fn.fnamemodify(name, ":t")
+  return vim.fn.fnamemodify(name, ":~:.")
 end
 
 local Align = { provider = "%=" }
