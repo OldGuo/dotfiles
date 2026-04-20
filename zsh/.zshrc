@@ -11,12 +11,10 @@ plugins=(
   zsh-autosuggestions
 )
 
-# scm breeze
-autoload -Uz compinit
-compinit
-[ -s "$HOME/.scm_breeze/scm_breeze.sh" ] && source "$HOME/.scm_breeze/scm_breeze.sh"
-
 source $ZSH/oh-my-zsh.sh
+
+# scm breeze
+[ -s "$HOME/.scm_breeze/scm_breeze.sh" ] && source "$HOME/.scm_breeze/scm_breeze.sh"
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
