@@ -339,8 +339,12 @@ def install_scm_breeze():
 
 
 def install_codex():
+    source = REPO_ROOT / "codex/config.toml"
+    if not source.exists():
+        print("skipping codex config: no repo-local codex/config.toml present")
+        return
     print("applying codex config")
-    link_file(REPO_ROOT / "codex/config.toml", HOME / ".codex/config.toml")
+    link_file(source, HOME / ".codex/config.toml")
 
 
 def install_neovim():

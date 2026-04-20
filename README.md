@@ -31,7 +31,7 @@ APPLY_LOGIN_SHELL=1 python3 install.py
 - Installs Oh My Zsh and shell plugins
 - Installs `scm_breeze`
 - Symlinks configs from this repo into `$HOME`
-- Applies Codex CLI config (`~/.codex/config.toml`)
+- Applies repo-local Codex CLI config (`~/.codex/config.toml`) when `codex/config.toml` is present
 - Bootstraps `lazy.nvim` and runs plugin/tree-sitter sync
 
 The script is designed to be rerunnable and backs up pre-existing target files before replacing them with symlinks.
@@ -67,7 +67,7 @@ SKIP_DOTFILES_PREPUSH=1 git push
   - `ls -l ~/.config/nvim`
   - `ls -l ~/.config/ghostty/config`
   - `ls -l ~/Library/Application\\ Support/Code/User/settings.json`
-  - `ls -l ~/.codex/config.toml`
+  - `ls -l ~/.codex/config.toml` (if using a repo-local Codex config)
 
 ## Commit Message Rules (Codex/AI)
 Commit message guidance for Codex lives in `codex/COMMIT_RULES.md`.
