@@ -6,6 +6,7 @@ local function live_grep_project()
   })
 end
 
+vim.keymap.set("n", "<leader><leader>", fzf.commands, { desc = "FzfLua commands" })
 vim.keymap.set("n", "<leader>pf", fzf.files, { desc = "FzfLua find files" })
 vim.keymap.set("n", "<leader>pg", fzf.git_files, { desc = "FzfLua git files" })
 vim.keymap.set("n", "<leader>/", live_grep_project, { desc = "FzfLua live grep (project)" })
