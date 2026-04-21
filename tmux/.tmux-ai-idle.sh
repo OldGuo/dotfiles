@@ -31,12 +31,12 @@ is_ai_window() {
   local cmd="$1"
   local tty="$2"
 
-  if [ "$cmd" = "claude" ] || [ "$cmd" = "codex" ]; then
+  if [ "$cmd" = "claude" ] || [ "$cmd" = "codex" ] || [ "$cmd" = "agent" ] || [ "$cmd" = "cursor-agent" ]; then
     return 0
   fi
 
-  # Codex frequently appears as `node`, so inspect the TTY command lines.
-  if [ "$cmd" = "node" ] && ps -t "${tty#/dev/}" -o args= 2>/dev/null | grep -Eiq '(^|[ /])(claude|codex)([[:space:]]|$)'; then
+  # Some AI CLIs may appear as `node`, so inspect the TTY command lines.
+  if [ "$cmd" = "node" ] && ps -t "${tty#/dev/}" -o args= 2>/dev/null | grep -Eiq '(^|[ /])(claude|codex|agent|cursor-agent)([[:space:]]|$)'; then
     return 0
   fi
 
