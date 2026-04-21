@@ -15,6 +15,9 @@ local commands = {
   { "References",              function() require("fzf-lua").lsp_references() end },
   { "DocumentDiagnostics",     function() require("fzf-lua").diagnostics_document() end },
   { "WorkspaceDiagnostics",    function() require("fzf-lua").diagnostics_workspace() end },
+  { "ToggleComment",           function()
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("gcc", true, true, true), "m", false)
+  end },
 
   -- edit
   { "Format",                  function() require("conform").format({ lsp_format = "never", timeout_ms = 5000 }) end },
