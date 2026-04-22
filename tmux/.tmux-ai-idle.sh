@@ -16,6 +16,11 @@ idle_threshold=15
 idle_colors=("#[fg=#eee8d5,bg=#dc322f,bold]" "#[fg=#eee8d5,bg=#ff6961,bold]")
 thinking_colors=("#[fg=#002b36,bg=#ffd700,bold]" "#[fg=#002b36,bg=#f0ad4e,bold]")
 
+# Per-pane content hashes live here. tty mtime is unreliable because AI CLIs
+# re-render their UI (statusline, cursor) on a sub-15s timer even when idle.
+state_dir="${TMPDIR:-/tmp}/tmux-ai-idle-$UID"
+mkdir -p "$state_dir" 2>/dev/null
+
 # Map tmux session IDs to one-based display index and name (for status-right labels).
 session_order=1
 declare -A session_display_idx
@@ -52,21 +57,41 @@ declare -A all_windows_think # window_id -> current @ai_thinking value
 
 # Use list-panes (not list-windows) so non-active panes are checked too.
 # Include @ai_idle and @ai_thinking to skip no-op set-window-option calls.
-while IFS='|' read -r window_id session_id cmd tty pane_path ai_idle ai_thinking; do
+declare -A active_states  # state-file basenames we touched this run, for cleanup
+while IFS='|' read -r window_id session_id pane_id cmd tty pane_path ai_idle ai_thinking; do
   all_windows[$window_id]="$ai_idle"
   all_windows_think[$window_id]="$ai_thinking"
   [ -n "${idle_windows[$window_id]}" ] || [ -n "${thinking_windows[$window_id]}" ] && continue
   if is_ai_window "$cmd" "$tty"; then
-    # Per-pane idle: use the TTY device mtime (last program output).
-    tty_mtime=$(stat -c %Y "$tty" 2>/dev/null || echo "$now")
-    if [ $((now - tty_mtime)) -gt "$idle_threshold" ]; then
+    # Hash the visible pane content. Stable hash = no real UI change = idle.
+    current_hash=$("$TMUX_BIN" capture-pane -p -t "$pane_id" 2>/dev/null | md5sum | cut -d' ' -f1)
+    state_key="${pane_id//[!a-zA-Z0-9]/_}"
+    state_file="$state_dir/$state_key"
+    active_states[$state_key]=1
+    stored_hash=""
+    stored_time=$now
+    if [ -f "$state_file" ]; then
+      stored_hash=$(cat "$state_file" 2>/dev/null)
+      stored_time=$(stat -c %Y "$state_file" 2>/dev/null || echo "$now")
+    fi
+    if [ "$current_hash" != "$stored_hash" ]; then
+      printf '%s' "$current_hash" > "$state_file"
+      thinking_windows[$window_id]="$session_id"
+    elif [ $((now - stored_time)) -gt "$idle_threshold" ]; then
       idle_windows[$window_id]="$session_id"
       idle_paths[$window_id]="$pane_path"
     else
       thinking_windows[$window_id]="$session_id"
     fi
   fi
-done < <("$TMUX_BIN" list-panes -a -F "#{window_id}|#{session_id}|#{pane_current_command}|#{pane_tty}|#{pane_current_path}|#{@ai_idle}|#{@ai_thinking}")
+done < <("$TMUX_BIN" list-panes -a -F "#{window_id}|#{session_id}|#{pane_id}|#{pane_current_command}|#{pane_tty}|#{pane_current_path}|#{@ai_idle}|#{@ai_thinking}")
+
+# Prune state files for panes that no longer exist (keep /tmp tidy).
+for f in "$state_dir"/*; do
+  [ -f "$f" ] || continue
+  base=$(basename "$f")
+  [ -z "${active_states[$base]}" ] && rm -f "$f" 2>/dev/null
+done
 
 # Update @ai_idle and @ai_thinking window options.
 declare -A newly_idle
