@@ -47,6 +47,10 @@ vim.g.clipboard = {
   },
 }
 
+vim.api.nvim_create_autocmd("VimResized", {
+  command = "wincmd =",
+})
+
 local checktime_group = vim.api.nvim_create_augroup("checktime", { clear = true })
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
   group = checktime_group,

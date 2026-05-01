@@ -1,3 +1,11 @@
+require("diffview").setup({
+  file_panel = {
+    win_config = {
+      width = 60,
+    },
+  },
+})
+
 local function diffview_ctx()
   local ok_lib, lib = pcall(require, "diffview.lib")
   if not ok_lib or not lib then
@@ -122,3 +130,4 @@ end, { silent = true, desc = "Git history (Diffview)" })
 vim.keymap.set("n", "<leader>gL", function()
   require("fzf-lua").git_bcommits()
 end, { silent = true, desc = "Git log current file" })
+
