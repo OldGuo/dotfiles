@@ -54,7 +54,7 @@ end
 local function find_runonsave_commands(bufpath)
   local settings_path = vim.fn.findfile(".vscode/settings.json", vim.fn.fnamemodify(bufpath, ":h") .. ";")
   if settings_path == "" then
-    return nil, "no .vscode/settings.json found"
+    return nil, nil
   end
 
   local project_root = vim.fn.fnamemodify(settings_path, ":h:h")
@@ -63,6 +63,9 @@ local function find_runonsave_commands(bufpath)
   if cache[abs_root] then
     if cache[abs_root].failed then
       return nil, cache[abs_root].reason
+    end
+    if cache[abs_root].commands == false then
+      return nil, nil
     end
     return cache[abs_root].commands, abs_root
   end
@@ -84,8 +87,8 @@ local function find_runonsave_commands(bufpath)
 
   local runonsave = settings["achilleshr.runonsave"]
   if not runonsave or not runonsave.commands then
-    cache[abs_root] = { failed = true, reason = "no achilleshr.runonsave.commands in settings" }
-    return nil, cache[abs_root].reason
+    cache[abs_root] = { commands = false }
+    return nil, nil
   end
 
   cache[abs_root] = { commands = runonsave.commands }
@@ -102,7 +105,9 @@ vim.api.nvim_create_autocmd("BufWritePost", {
 
     local commands, project_root = find_runonsave_commands(bufpath)
     if not commands then
-      vim.notify("runonsave: " .. (project_root or "unknown error"), vim.log.levels.WARN)
+      if project_root then
+        vim.notify("runonsave: " .. project_root, vim.log.levels.WARN)
+      end
       return
     end
 

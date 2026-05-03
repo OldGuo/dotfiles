@@ -1,12 +1,8 @@
--- Suppress nvim-lspconfig deprecation warning
 vim.g.mapleader = " "
 
-local notify = vim.notify
-vim.notify = function(msg, ...)
-  if msg:match("nvim%-lspconfig.*deprecated") then
-    return
-  end
-  notify(msg, ...)
-end
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
 
 require("youngxguo")

@@ -60,23 +60,17 @@ vim.keymap.set("n", "<C-p>", function()
   })
 end, { silent = true })
 -- vim/tmux pane navigation
--- Resolve the tmux binary from the running server process (once) to avoid
--- version mismatch between snap and system packages.
-local tmux_bin = (function()
-  local pid = (vim.env.TMUX or ""):match(",(%d+),")
-  if pid then
-    local exe = vim.uv.fs_readlink("/proc/" .. pid .. "/exe")
-    if exe then return exe end
-  end
-  return "tmux"
-end)()
+local tmux_bin = vim.fn.exepath("tmux")
+if tmux_bin == "" then
+  tmux_bin = "tmux"
+end
 
 local tmux_dir_map = { h = "L", j = "D", k = "U", l = "R" }
 
 local function tmux_navigate(direction)
   local nr = vim.fn.winnr()
   vim.cmd("wincmd " .. direction)
-  if nr == vim.fn.winnr() then
+  if nr == vim.fn.winnr() and vim.env.TMUX then
     vim.fn.system({ tmux_bin, "select-pane", "-" .. tmux_dir_map[direction] })
   end
 end

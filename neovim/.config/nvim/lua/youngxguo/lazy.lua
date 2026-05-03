@@ -72,7 +72,16 @@ require("lazy").setup({
   },
   { "neovim/nvim-lspconfig" },
   { "stevearc/conform.nvim", lazy = false },
-  { "j-hui/fidget.nvim", opts = {} },
+  {
+    "j-hui/fidget.nvim",
+    opts = {
+      notification = {
+        window = {
+          avoid = { "NvimTree" },
+        },
+      },
+    },
+  },
   {
     "saghen/blink.cmp",
     version = "1.*",
@@ -181,6 +190,15 @@ require("lazy").setup({
     opts = {
       options = {
         diagnostics = "nvim_lsp",
+        diagnostics_indicator = function(_, _, diagnostics_dict)
+          local s = " "
+          for e, n in pairs(diagnostics_dict) do
+            local sym = e == "error" and " "
+              or (e == "warning" and " " or " ")
+            s = s .. n .. sym
+          end
+          return s
+        end,
         show_close_icon = false,
         show_buffer_close_icons = false,
         separator_style = "thin",
@@ -210,6 +228,11 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {
       use_icons = true,
+      file_panel = {
+        win_config = {
+          width = 60,
+        },
+      },
       hooks = {
         diff_buf_read = function(bufnr)
           vim.schedule(function()
@@ -265,5 +288,9 @@ require("lazy").setup({
       default_merge_method = "squash",
       picker = "fzf-lua",
     },
+  },
+}, {
+  rocks = {
+    enabled = false,
   },
 })

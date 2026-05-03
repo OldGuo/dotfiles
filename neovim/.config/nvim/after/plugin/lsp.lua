@@ -76,6 +76,7 @@ end
 
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md
 vim.lsp.config('ts_ls', {
+  filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
   root_markers = { 'pnpm-workspace.yaml', 'pnpm-lock.yaml', 'tsconfig.json', 'package.json', '.git' },
   cmd_env = { NODE_OPTIONS = '--max-old-space-size=8192' },
   before_init = function(init_params, config)
@@ -111,6 +112,7 @@ end
 if vim.fn.executable('vscode-eslint-language-server') == 1 then
   vim.lsp.config('eslint', {
     cmd = { 'vscode-eslint-language-server', '--stdio' },
+    filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'vue', 'svelte', 'astro' },
     settings = {
       run = 'onType',
       validate = 'on',
