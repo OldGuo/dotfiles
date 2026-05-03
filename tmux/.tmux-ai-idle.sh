@@ -1,224 +1,265 @@
-#!/bin/bash
-# Use the same tmux binary as the running server (snap vs system).
-# $TMUX is "socket,pid,index" — resolve the binary from the server PID.
-TMUX_BIN="$(readlink -f "/proc/$(echo "$TMUX" | cut -d, -f2)/exe" 2>/dev/null || echo tmux)"
+#!/usr/bin/env python3
 
-# Snap updates can wipe the private /tmp that holds the socket.
-# Recreate the directory so the server can re-bind.
-if [ -n "$TMUX" ]; then
-  _socket="${TMUX%%,*}"
-  _socket_dir="$(dirname "$_socket")"
-  [ -d "$_socket_dir" ] || mkdir -p "$_socket_dir" 2>/dev/null
-fi
+import hashlib
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
 
-now=$(date +%s)
-idle_threshold=15
-idle_colors=("#[fg=#eee8d5,bg=#dc322f,bold]" "#[fg=#eee8d5,bg=#ff6961,bold]")
-thinking_colors=("#[fg=#002b36,bg=#ffd700,bold]" "#[fg=#002b36,bg=#f0ad4e,bold]")
 
-# Per-pane content hashes live here. tty mtime is unreliable because AI CLIs
-# re-render their UI (statusline, cursor) on a sub-15s timer even when idle.
-state_dir="${TMPDIR:-/tmp}/tmux-ai-idle-$UID"
-mkdir -p "$state_dir" 2>/dev/null
+IDLE_THRESHOLD = 15
+IDLE_COLORS = ("#[fg=#eee8d5,bg=#dc322f,bold]", "#[fg=#eee8d5,bg=#ff6961,bold]")
+THINKING_COLORS = ("#[fg=#002b36,bg=#ffd700,bold]", "#[fg=#002b36,bg=#f0ad4e,bold]")
+AI_COMMAND_RE = re.compile(r"(^|[ /])(claude|codex|agent|cursor-agent)([ \t]|$)", re.IGNORECASE)
 
-# Map tmux session IDs to one-based display index and name (for status-right labels).
-session_order=1
-declare -A session_display_idx
-declare -A session_names
-while IFS='|' read -r sid sname; do
-  sid_num="${sid#\$}"
-  session_display_idx[$sid_num]=$session_order
-  session_names[$sid_num]="$sname"
-  session_order=$((session_order + 1))
-done < <("$TMUX_BIN" list-sessions -F "#{session_id}|#{session_name}" 2>/dev/null)
 
-is_ai_window() {
-  local cmd="$1"
-  local tty="$2"
+def tmux_binary():
+    tmux_env = os.environ.get("TMUX", "")
+    if tmux_env:
+        parts = tmux_env.split(",")
+        if len(parts) > 1 and parts[1]:
+            proc_exe = Path("/proc") / parts[1] / "exe"
+            if proc_exe.exists():
+                try:
+                    return str(proc_exe.resolve())
+                except OSError:
+                    pass
+    return shutil.which("tmux") or "tmux"
 
-  if [ "$cmd" = "claude" ] || [ "$cmd" = "codex" ] || [ "$cmd" = "agent" ] || [ "$cmd" = "cursor-agent" ]; then
+
+TMUX_BIN = tmux_binary()
+
+
+def run_tmux(*args, check=False):
+    return subprocess.run(
+        [TMUX_BIN, *args],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=check,
+    )
+
+
+def tmux_lines(*args):
+    result = run_tmux(*args)
+    if result.returncode != 0:
+        return []
+    return result.stdout.splitlines()
+
+
+def recreate_tmux_socket_dir():
+    tmux_env = os.environ.get("TMUX", "")
+    if not tmux_env:
+        return
+    socket = tmux_env.split(",", 1)[0]
+    if socket:
+        Path(socket).parent.mkdir(parents=True, exist_ok=True)
+
+
+def is_ai_window(cmd, tty):
+    if cmd in {"claude", "codex", "agent", "cursor-agent"}:
+        return True
+    if cmd != "node" or not tty:
+        return False
+
+    tty_name = tty[5:] if tty.startswith("/dev/") else tty
+    result = subprocess.run(
+        ["ps", "-t", tty_name, "-o", "args="],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0 and bool(AI_COMMAND_RE.search(result.stdout))
+
+
+def capture_hash(pane_id):
+    result = run_tmux("capture-pane", "-p", "-t", pane_id)
+    return hashlib.md5(result.stdout.encode("utf-8", "replace")).hexdigest()
+
+
+def git_branch(path):
+    result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=path,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    if result.returncode == 0:
+        return result.stdout.strip()
+    return ""
+
+
+def set_window_option(window_id, option, value=None):
+    if value is None:
+        run_tmux("set-window-option", "-q", "-u", "-t", window_id, option)
+    else:
+        run_tmux("set-window-option", "-q", "-t", window_id, option, value)
+
+
+def set_session_option(session_id, option, value=None):
+    if value is None:
+        run_tmux("set-option", "-q", "-u", "-t", session_id, option)
+    else:
+        run_tmux("set-option", "-q", "-t", session_id, option, value)
+
+
+def sort_by_session_idx(window_ids, window_to_session, session_display_idx):
+    return sorted(window_ids, key=lambda wid: session_display_idx.get(window_to_session[wid].lstrip("$"), 0))
+
+
+def main():
+    recreate_tmux_socket_dir()
+    now = int(time.time())
+    uid = os.getuid() if hasattr(os, "getuid") else os.environ.get("UID", "user")
+    state_dir = Path(os.environ.get("TMPDIR") or tempfile.gettempdir()) / f"tmux-ai-idle-{uid}"
+    state_dir.mkdir(parents=True, exist_ok=True)
+
+    session_display_idx = {}
+    session_names = {}
+    for idx, line in enumerate(tmux_lines("list-sessions", "-F", "#{session_id}|#{session_name}"), start=1):
+        sid, _, name = line.partition("|")
+        sid_num = sid.lstrip("$")
+        session_display_idx[sid_num] = idx
+        session_names[sid_num] = name
+
+    idle_windows = {}
+    thinking_windows = {}
+    idle_paths = {}
+    all_windows = {}
+    all_windows_think = {}
+    active_states = set()
+
+    pane_format = "#{window_id}|#{session_id}|#{pane_id}|#{pane_current_command}|#{pane_tty}|#{pane_current_path}|#{@ai_idle}|#{@ai_thinking}"
+    for line in tmux_lines("list-panes", "-a", "-F", pane_format):
+        parts = line.split("|", 7)
+        if len(parts) != 8:
+            continue
+        window_id, session_id, pane_id, cmd, tty, pane_path, ai_idle, ai_thinking = parts
+        all_windows[window_id] = ai_idle
+        all_windows_think[window_id] = ai_thinking
+        if window_id in idle_windows or window_id in thinking_windows:
+            continue
+        if not is_ai_window(cmd, tty):
+            continue
+
+        current_hash = capture_hash(pane_id)
+        state_key = re.sub(r"[^a-zA-Z0-9]", "_", pane_id)
+        state_file = state_dir / state_key
+        active_states.add(state_key)
+
+        stored_hash = ""
+        stored_time = now
+        if state_file.exists():
+            stored_hash = state_file.read_text(encoding="utf-8", errors="ignore")
+            stored_time = int(state_file.stat().st_mtime)
+
+        if current_hash != stored_hash:
+            state_file.write_text(current_hash, encoding="utf-8")
+            thinking_windows[window_id] = session_id
+        elif now - stored_time > IDLE_THRESHOLD:
+            idle_windows[window_id] = session_id
+            idle_paths[window_id] = pane_path
+        else:
+            thinking_windows[window_id] = session_id
+
+    for path in state_dir.iterdir():
+        if path.is_file() and path.name not in active_states:
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                pass
+
+    newly_idle = {}
+    for window_id in all_windows:
+        if window_id in idle_windows:
+            if all_windows[window_id] != "1":
+                set_window_option(window_id, "@ai_idle", "1")
+                newly_idle[window_id] = True
+            if all_windows_think.get(window_id) == "1":
+                set_window_option(window_id, "@ai_thinking")
+        elif window_id in thinking_windows:
+            if all_windows_think.get(window_id) != "1":
+                set_window_option(window_id, "@ai_thinking", "1")
+            if all_windows.get(window_id) == "1":
+                set_window_option(window_id, "@ai_idle")
+        else:
+            if all_windows.get(window_id) == "1":
+                set_window_option(window_id, "@ai_idle")
+            if all_windows_think.get(window_id) == "1":
+                set_window_option(window_id, "@ai_thinking")
+
+    idle_sessions = set(idle_windows.values())
+    thinking_sessions = set(thinking_windows.values())
+    for sid_num in session_display_idx:
+        sid = f"${sid_num}"
+        set_session_option(sid, "@session_ai_idle", "1" if sid in idle_sessions else None)
+        set_session_option(sid, "@session_ai_thinking", "1" if sid in thinking_sessions else None)
+
+    idle_labels = {}
+    idle_short_labels = {}
+    for window_id, session_id in idle_windows.items():
+        sid_num = session_id.lstrip("$")
+        display_idx = session_display_idx.get(sid_num, sid_num)
+        name = session_names.get(sid_num, "")
+        branch = git_branch(idle_paths[window_id])
+        idle_labels[window_id] = f"({display_idx}) {name}{(' ' + branch) if branch else ''}"
+        idle_short_labels[window_id] = f"({display_idx})"
+
+    thinking_labels = {}
+    for window_id, session_id in thinking_windows.items():
+        sid_num = session_id.lstrip("$")
+        thinking_labels[window_id] = f"({session_display_idx.get(sid_num, sid_num)})"
+
+    if newly_idle:
+        notif_lines = ["❕ AI Idle"]
+        notif_lines.extend(f" • {idle_labels[window_id]}" for window_id in newly_idle)
+        notif_msg = "\n".join(notif_lines)
+        for ctty in tmux_lines("list-clients", "-F", "#{client_tty}"):
+            try:
+                Path(ctty).write_text(f"\033Ptmux;\033\033]9;{notif_msg}\a\033\\", encoding="utf-8")
+            except OSError:
+                pass
+
+    if not idle_windows and not thinking_windows:
+        return 0
+
+    thinking_out = ""
+    for idx, window_id in enumerate(sort_by_session_idx(thinking_windows, thinking_windows, session_display_idx)):
+        thinking_out += f"{THINKING_COLORS[idx % len(THINKING_COLORS)]} 💭 {thinking_labels[window_id]} "
+
+    long_out = ""
+    short_out = ""
+    long_width = 0
+    for idx, window_id in enumerate(sort_by_session_idx(idle_windows, idle_windows, session_display_idx)):
+        color = IDLE_COLORS[idx % len(IDLE_COLORS)]
+        label = idle_labels[window_id]
+        long_out += f"{color} ! {label} "
+        short_out += f"{color} ! {idle_short_labels[window_id]} "
+        long_width += len(label) + 5
+
+    if not idle_windows:
+        print(f" {thinking_out} ", end="")
+        return 0
+
+    width_result = run_tmux("display", "-p", "#{client_width}")
+    try:
+        client_width = int(width_result.stdout.strip())
+    except ValueError:
+        client_width = 200
+    win_list_width = sum(len(name) + 5 for name in tmux_lines("list-windows", "-F", "#{window_name}"))
+    available = client_width - 48 - win_list_width - 25
+
+    if long_width <= available:
+        print(f" {thinking_out}{long_out} ", end="")
+    else:
+        print(f" {thinking_out}{short_out} ", end="")
     return 0
-  fi
 
-  # Some AI CLIs may appear as `node`, so inspect the TTY command lines.
-  if [ "$cmd" = "node" ] && ps -t "${tty#/dev/}" -o args= 2>/dev/null | grep -Eiq '(^|[ /])(claude|codex|agent|cursor-agent)([[:space:]]|$)'; then
-    return 0
-  fi
 
-  return 1
-}
-
-# Track which windows have an idle or thinking AI pane.
-declare -A idle_windows      # window_id -> session_id
-declare -A thinking_windows  # window_id -> session_id
-declare -A idle_paths        # window_id -> pane_current_path
-declare -A all_windows       # window_id -> current @ai_idle value
-declare -A all_windows_think # window_id -> current @ai_thinking value
-
-# Use list-panes (not list-windows) so non-active panes are checked too.
-# Include @ai_idle and @ai_thinking to skip no-op set-window-option calls.
-declare -A active_states  # state-file basenames we touched this run, for cleanup
-while IFS='|' read -r window_id session_id pane_id cmd tty pane_path ai_idle ai_thinking; do
-  all_windows[$window_id]="$ai_idle"
-  all_windows_think[$window_id]="$ai_thinking"
-  [ -n "${idle_windows[$window_id]}" ] || [ -n "${thinking_windows[$window_id]}" ] && continue
-  if is_ai_window "$cmd" "$tty"; then
-    # Hash the visible pane content. Stable hash = no real UI change = idle.
-    current_hash=$("$TMUX_BIN" capture-pane -p -t "$pane_id" 2>/dev/null | md5sum | cut -d' ' -f1)
-    state_key="${pane_id//[!a-zA-Z0-9]/_}"
-    state_file="$state_dir/$state_key"
-    active_states[$state_key]=1
-    stored_hash=""
-    stored_time=$now
-    if [ -f "$state_file" ]; then
-      stored_hash=$(cat "$state_file" 2>/dev/null)
-      stored_time=$(stat -c %Y "$state_file" 2>/dev/null || echo "$now")
-    fi
-    if [ "$current_hash" != "$stored_hash" ]; then
-      printf '%s' "$current_hash" > "$state_file"
-      thinking_windows[$window_id]="$session_id"
-    elif [ $((now - stored_time)) -gt "$idle_threshold" ]; then
-      idle_windows[$window_id]="$session_id"
-      idle_paths[$window_id]="$pane_path"
-    else
-      thinking_windows[$window_id]="$session_id"
-    fi
-  fi
-done < <("$TMUX_BIN" list-panes -a -F "#{window_id}|#{session_id}|#{pane_id}|#{pane_current_command}|#{pane_tty}|#{pane_current_path}|#{@ai_idle}|#{@ai_thinking}")
-
-# Prune state files for panes that no longer exist (keep /tmp tidy).
-for f in "$state_dir"/*; do
-  [ -f "$f" ] || continue
-  base=$(basename "$f")
-  [ -z "${active_states[$base]}" ] && rm -f "$f" 2>/dev/null
-done
-
-# Update @ai_idle and @ai_thinking window options.
-declare -A newly_idle
-for window_id in "${!all_windows[@]}"; do
-  if [ -n "${idle_windows[$window_id]}" ]; then
-    if [ "${all_windows[$window_id]}" != "1" ]; then
-      "$TMUX_BIN" set-window-option -q -t "$window_id" @ai_idle 1 >/dev/null 2>&1
-      newly_idle[$window_id]=1
-    fi
-    [ "${all_windows_think[$window_id]}" = "1" ] && \
-      "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_thinking >/dev/null 2>&1
-  elif [ -n "${thinking_windows[$window_id]}" ]; then
-    [ "${all_windows_think[$window_id]}" != "1" ] && \
-      "$TMUX_BIN" set-window-option -q -t "$window_id" @ai_thinking 1 >/dev/null 2>&1
-    [ "${all_windows[$window_id]}" = "1" ] && \
-      "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
-  else
-    [ "${all_windows[$window_id]}" = "1" ] && \
-      "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_idle >/dev/null 2>&1
-    [ "${all_windows_think[$window_id]}" = "1" ] && \
-      "$TMUX_BIN" set-window-option -q -u -t "$window_id" @ai_thinking >/dev/null 2>&1
-  fi
-done
-
-# Set/unset @session_ai_idle and @session_ai_thinking per session for choose-tree styling.
-declare -A idle_sessions
-declare -A thinking_sessions
-for wid in "${!idle_windows[@]}"; do
-  idle_sessions["${idle_windows[$wid]}"]=1
-done
-for wid in "${!thinking_windows[@]}"; do
-  thinking_sessions["${thinking_windows[$wid]}"]=1
-done
-for sid_num in "${!session_display_idx[@]}"; do
-  sid="\$$sid_num"
-  if [ -n "${idle_sessions[$sid]}" ]; then
-    "$TMUX_BIN" set-option -q -t "$sid" @session_ai_idle 1 >/dev/null 2>&1
-  else
-    "$TMUX_BIN" set-option -q -u -t "$sid" @session_ai_idle >/dev/null 2>&1
-  fi
-  if [ -n "${thinking_sessions[$sid]}" ]; then
-    "$TMUX_BIN" set-option -q -t "$sid" @session_ai_thinking 1 >/dev/null 2>&1
-  else
-    "$TMUX_BIN" set-option -q -u -t "$sid" @session_ai_thinking >/dev/null 2>&1
-  fi
-done
-
-# Build idle label for each window (shared by status-right and notifications).
-declare -A idle_labels      # window_id -> "(idx) name branch"
-declare -A idle_short_labels # window_id -> "(idx)"
-for window_id in "${!idle_windows[@]}"; do
-  sid="${idle_windows[$window_id]#\$}"
-  display_idx="${session_display_idx[$sid]:-$sid}"
-  sname="${session_names[$sid]:-}"
-  branch=$(cd "${idle_paths[$window_id]}" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null)
-  idle_labels[$window_id]="(${display_idx}) ${sname}${branch:+ $branch}"
-  idle_short_labels[$window_id]="(${display_idx})"
-done
-
-# Build thinking label for each window (session number only).
-declare -A thinking_labels
-for window_id in "${!thinking_windows[@]}"; do
-  sid="${thinking_windows[$window_id]#\$}"
-  display_idx="${session_display_idx[$sid]:-$sid}"
-  thinking_labels[$window_id]="(${display_idx})"
-done
-
-# Send desktop notification for windows that just became idle.
-if [ "${#newly_idle[@]}" -gt 0 ]; then
-  notif_msg="❕ AI Idle"
-  for wid in "${!newly_idle[@]}"; do
-    notif_msg="${notif_msg}
- • ${idle_labels[$wid]}"
-  done
-  while IFS= read -r ctty; do
-    printf '\ePtmux;\e\e]9;%s\a\e\\' "$notif_msg" > "$ctty" 2>/dev/null
-  done < <("$TMUX_BIN" list-clients -F '#{client_tty}' 2>/dev/null)
-fi
-
-# Output thinking + idle labels to status-right.
-[ "${#idle_windows[@]}" -eq 0 ] && [ "${#thinking_windows[@]}" -eq 0 ] && exit 0
-
-# Sort window IDs by session display index for stable output order.
-sort_by_session_idx() {
-  local -n _map=$1
-  for wid in "${!_map[@]}"; do
-    sid="${_map[$wid]#\$}"
-    printf '%d\t%s\n' "${session_display_idx[$sid]:-0}" "$wid"
-  done | sort -n | cut -f2
-}
-
-thinking_out=""
-idx=0
-while IFS= read -r window_id; do
-  label="${thinking_labels[$window_id]}"
-  color="${thinking_colors[$((idx % 2))]}"
-  thinking_out="${thinking_out}${color} 💭 ${label} "
-  idx=$((idx + 1))
-done < <(sort_by_session_idx thinking_windows)
-
-long_out=""
-short_out=""
-long_width=0
-idx=0
-while IFS= read -r window_id; do
-  label="${idle_labels[$window_id]}"
-  color="${idle_colors[$((idx % 2))]}"
-  long_out="${long_out}${color} ! ${label} "
-  short_out="${short_out}${color} ! ${idle_short_labels[$window_id]} "
-  long_width=$((long_width + ${#label} + 5))
-  idx=$((idx + 1))
-done < <(sort_by_session_idx idle_windows)
-
-if [ "${#idle_windows[@]}" -eq 0 ]; then
-  printf ' %s ' "$thinking_out"
-  exit 0
-fi
-
-client_width=$("$TMUX_BIN" display -p '#{client_width}' 2>/dev/null || echo 200)
-win_list_width=0
-while IFS= read -r wname; do
-  win_list_width=$((win_list_width + ${#wname} + 5))
-done < <("$TMUX_BIN" list-windows -F "#{window_name}" 2>/dev/null)
-available=$((client_width - 48 - win_list_width - 25))
-
-if [ "$long_width" -le "$available" ]; then
-  printf ' %s%s ' "$thinking_out" "$long_out"
-else
-  printf ' %s%s ' "$thinking_out" "$short_out"
-fi
+if __name__ == "__main__":
+    sys.exit(main())

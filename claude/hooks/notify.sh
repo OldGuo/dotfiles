@@ -4,12 +4,26 @@
 #
 # Requires: set -g allow-passthrough on   (tmux.conf)
 
-# Resolve tmux binary from the running server (snap vs system).
-if [ -n "$TMUX" ]; then
-  TMUX_BIN="$(readlink -f "/proc/$(echo "$TMUX" | cut -d, -f2)/exe" 2>/dev/null || echo tmux)"
-else
-  TMUX_BIN=tmux
-fi
+# Resolve tmux binary from the running server when Linux exposes it.
+# macOS has no /proc, so fall back to the tmux on PATH there.
+tmux_binary() {
+  local pid exe
+
+  if [ -n "$TMUX" ]; then
+    pid="$(printf '%s' "$TMUX" | cut -d, -f2)"
+    if [ -n "$pid" ] && [ -e "/proc/$pid/exe" ]; then
+      exe="$(readlink -f "/proc/$pid/exe" 2>/dev/null)"
+      if [ -n "$exe" ]; then
+        printf '%s\n' "$exe"
+        return
+      fi
+    fi
+  fi
+
+  command -v tmux 2>/dev/null || printf 'tmux\n'
+}
+
+TMUX_BIN="$(tmux_binary)"
 
 # Parse notification title from stdin JSON (Claude Code pipes hook data).
 message="Claude Code needs attention"
@@ -27,7 +41,7 @@ fi
 # Send OSC 9 notification.
 if [ -n "$TMUX" ]; then
   # Wrap in DCS passthrough so tmux forwards it to the outer terminal (Ghostty).
-  printf '\ePtmux;\e\e]9;%s\a\e\\' "$message" > "$tty" 2>/dev/null
+  { printf '\ePtmux;\e\e]9;%s\a\e\\' "$message" > "$tty"; } 2>/dev/null || true
 else
-  printf '\e]9;%s\a' "$message" > "$tty" 2>/dev/null
+  { printf '\e]9;%s\a' "$message" > "$tty"; } 2>/dev/null || true
 fi
