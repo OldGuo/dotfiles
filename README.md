@@ -28,6 +28,8 @@ APPLY_LOGIN_SHELL=1 python3 install.py
 
 ## What Install Does
 - Installs missing packages via Homebrew (or Linux package manager fallback: `apt`/`dnf`/`pacman`/`zypper`) for `zsh`, `direnv`, `fzf`, `tmux`, `neovim`, `ripgrep`, `fd`
+- Installs Homebrew-managed Neovim helper tools when Homebrew is available: `prettier`, `tree-sitter-cli`, `typescript-language-server`, `basedpyright`, `gh`, `chafa`, `viu`, `mercurial`
+- Installs the ESLint language server from npm when `npm` is available
 - Installs Oh My Zsh and shell plugins
 - Installs `scm_breeze`
 - Symlinks configs from this repo into `$HOME`
@@ -61,6 +63,7 @@ SKIP_DOTFILES_PREPUSH=1 git push
 - `tmux -V`
 - `nvim --version`
 - `nvim --headless "+checkhealth" +qa`
+- `python3 install.py --verify-neovim-health`
 - Confirm symlinks:
   - `ls -l ~/.zshrc`
   - `ls -l ~/.tmux.conf`

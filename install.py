@@ -29,6 +29,14 @@ PACKAGE_BINARIES = {
     "neovim": ("nvim",),
     "ripgrep": ("rg",),
     "fd": ("fd", "fdfind"),
+    "prettier": ("prettier",),
+    "tree-sitter-cli": ("tree-sitter",),
+    "typescript-language-server": ("typescript-language-server",),
+    "basedpyright": ("basedpyright-langserver",),
+    "gh": ("gh",),
+    "chafa": ("chafa",),
+    "viu": ("viu",),
+    "mercurial": ("hg",),
     "zsh": ("zsh",),
     "tmux": ("tmux",),
     "direnv": ("direnv",),
@@ -161,6 +169,36 @@ def install_package(pkg):
     else:
         run(["brew", "install", pkg])
         return True
+
+
+def install_homebrew_only_package(pkg):
+    if pkg_installed(pkg):
+        print(f"{pkg} already installed")
+        return True
+    if VERIFY_MODE:
+        print(f"verify mode: skipping optional homebrew package install for {pkg}")
+        return False
+    if not command_exists("brew"):
+        print(f"skipping optional {pkg}: homebrew is not available")
+        return False
+    return install_package(pkg)
+
+
+def install_npm_global(package, binaries):
+    if any(command_exists(binary) for binary in binaries):
+        print(f"{package} already installed")
+        return True
+    if VERIFY_MODE:
+        print(f"verify mode: skipping npm global install for {package}")
+        return False
+    if not command_exists("npm"):
+        if command_exists("brew"):
+            install_package("node")
+    if not command_exists("npm"):
+        print(f"skipping {package}: npm is not available")
+        return False
+    run(["npm", "install", "-g", package])
+    return any(command_exists(binary) for binary in binaries)
 
 
 def clone_if_missing(repo_url, target_dir):
@@ -356,6 +394,15 @@ def install_neovim():
     install_package("neovim")
     install_package("ripgrep")
     install_package("fd")
+    install_homebrew_only_package("prettier")
+    install_homebrew_only_package("tree-sitter-cli")
+    install_homebrew_only_package("typescript-language-server")
+    install_homebrew_only_package("basedpyright")
+    install_homebrew_only_package("gh")
+    install_homebrew_only_package("chafa")
+    install_homebrew_only_package("viu")
+    install_homebrew_only_package("mercurial")
+    install_npm_global("vscode-langservers-extracted", ("vscode-eslint-language-server",))
     ensure_fd_compat_shim()
     if not command_exists("nvim"):
         print("skipping neovim config: nvim is not installed")
@@ -451,12 +498,39 @@ def verify_idempotent():
     LINUX_APT_UPDATED = original_apt_updated
 
 
+def verify_neovim_health():
+    if not command_exists("nvim"):
+        print("neovim health check failed: nvim is not installed", file=sys.stderr)
+        sys.exit(1)
+
+    with tempfile.NamedTemporaryFile(prefix="nvim-health-", suffix=".txt") as health_file:
+        run([
+            "nvim",
+            "--headless",
+            "+checkhealth",
+            f"+write! {health_file.name}",
+            "+qa",
+        ])
+        health = Path(health_file.name).read_text(encoding="utf-8", errors="replace")
+
+    if "ERROR" in health or "❌" in health:
+        print("neovim health check reported errors", file=sys.stderr)
+        sys.exit(1)
+
+    print("neovim health verification passed")
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Bootstrap dotfiles on macOS/Linux.")
     parser.add_argument(
         "--verify-idempotent",
         action="store_true",
         help="Run a safe two-pass install verification in a temporary HOME.",
+    )
+    parser.add_argument(
+        "--verify-neovim-health",
+        action="store_true",
+        help="Run Neovim checkhealth and fail if health reports errors.",
     )
     return parser.parse_args()
 
@@ -465,6 +539,9 @@ def main():
     args = parse_args()
     if args.verify_idempotent:
         verify_idempotent()
+        return
+    if args.verify_neovim_health:
+        verify_neovim_health()
         return
     run_install_flow()
 
