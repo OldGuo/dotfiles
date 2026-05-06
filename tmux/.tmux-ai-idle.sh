@@ -14,7 +14,7 @@ from pathlib import Path
 IDLE_THRESHOLD = 15
 IDLE_COLORS = ("#[fg=#eee8d5,bg=#dc322f,bold]", "#[fg=#eee8d5,bg=#ff6961,bold]")
 THINKING_COLORS = ("#[fg=#002b36,bg=#ffd700,bold]", "#[fg=#002b36,bg=#f0ad4e,bold]")
-AI_COMMAND_RE = re.compile(r"(^|[ /])(claude|codex|agent|cursor-agent)([ \t]|$)", re.IGNORECASE)
+AI_COMMAND_RE = re.compile(r"(^|[ /])(claude|codex|agent|cursor-agent)([ \t/\n]|$)", re.IGNORECASE)
 
 
 def tmux_binary():
@@ -221,7 +221,7 @@ def main():
         notif_msg = "\n".join(notif_lines)
         for ctty in tmux_lines("list-clients", "-F", "#{client_tty}"):
             try:
-                Path(ctty).write_text(f"\033Ptmux;\033\033]9;{notif_msg}\a\033\\", encoding="utf-8")
+                Path(ctty).write_text(f"\033]9;{notif_msg}\a", encoding="utf-8")
             except OSError:
                 pass
 
