@@ -8,3 +8,6 @@ custom-shader = ./shaders/cursor-smear-fade.glsl
 custom-shader-animation = true
 clipboard-paste-protection = false
 desktop-notifications = true
+
+# Send Option-Enter as Meta-Enter so tmux can distinguish it from Ctrl-J.
+keybind = alt+enter=text:\x1b\x0d
