@@ -17,7 +17,11 @@ source $ZSH/oh-my-zsh.sh
 [ -s "$HOME/.scm_breeze/scm_breeze.sh" ] && source "$HOME/.scm_breeze/scm_breeze.sh"
 
 # fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+if command -v fzf >/dev/null 2>&1; then
+  source <(fzf --zsh)
+elif [ -f ~/.fzf.zsh ]; then
+  source ~/.fzf.zsh
+fi
 eval "$(direnv hook zsh)"
 
 # git
