@@ -5,44 +5,6 @@ end
 
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
-local function hex(value)
-  if not value then
-    return nil
-  end
-  return string.format("#%06x", value)
-end
-
-local function hl(name)
-  return vim.api.nvim_get_hl(0, { name = name, link = false })
-end
-
-local function hl_color(names, key, fallback)
-  for _, name in ipairs(names) do
-    local color = hex(hl(name)[key])
-    if color then
-      return color
-    end
-  end
-  return fallback
-end
-
-local colors = {
-  base03 = hl_color({ "StatusLine", "CursorLine" }, "bg", "#222436"),
-  base02 = hl_color({ "CursorLine", "StatusLine" }, "bg", "#2f334d"),
-  base01 = hl_color({ "Visual", "StatusLineNC" }, "bg", "#444a73"),
-  base0 = hl_color({ "StatusLineNC", "Comment" }, "fg", "#828bb8"),
-  base1 = hl_color({ "StatusLine", "Normal" }, "fg", "#c8d3f5"),
-  base2 = hl_color({ "Normal", "StatusLine" }, "fg", "#c8d3f5"),
-  blue = hl_color({ "DiagnosticInfo", "Function" }, "fg", "#82aaff"),
-  cyan = hl_color({ "DiagnosticHint", "Special" }, "fg", "#86e1fc"),
-  green = hl_color({ "DiagnosticOk", "String" }, "fg", "#c3e88d"),
-  orange = hl_color({ "Number", "Constant" }, "fg", "#ff966c"),
-  red = hl_color({ "DiagnosticError", "ErrorMsg" }, "fg", "#ff757f"),
-  magenta = hl_color({ "Keyword", "Statement" }, "fg", "#c099ff"),
-  violet = hl_color({ "Type", "Identifier" }, "fg", "#4fd6be"),
-  yellow = hl_color({ "DiagnosticWarn", "WarningMsg" }, "fg", "#ffc777"),
-}
-
 local mode_names = {
   n = "NORMAL",
   no = "O-PEND",
@@ -79,37 +41,37 @@ local mode_names = {
   t = "TERMINAL",
 }
 
-local mode_colors = {
-  n = colors.blue,
-  no = colors.blue,
-  niI = colors.blue,
-  niR = colors.blue,
-  niV = colors.blue,
-  nt = colors.blue,
-  v = colors.magenta,
-  vs = colors.magenta,
-  V = colors.magenta,
-  Vs = colors.magenta,
-  ["\22"] = colors.magenta,
-  ["\22s"] = colors.magenta,
-  s = colors.violet,
-  S = colors.violet,
-  ["\19"] = colors.violet,
-  i = colors.green,
-  ic = colors.green,
-  ix = colors.green,
-  R = colors.orange,
-  Rc = colors.orange,
-  Rx = colors.orange,
-  Rv = colors.orange,
-  c = colors.yellow,
-  cv = colors.yellow,
-  ce = colors.yellow,
-  r = colors.cyan,
-  rm = colors.cyan,
-  ["r?"] = colors.cyan,
-  ["!"] = colors.red,
-  t = colors.red,
+local mode_highlights = {
+  n = "DiagnosticInfo",
+  no = "DiagnosticInfo",
+  niI = "DiagnosticInfo",
+  niR = "DiagnosticInfo",
+  niV = "DiagnosticInfo",
+  nt = "DiagnosticInfo",
+  v = "Visual",
+  vs = "Visual",
+  V = "Visual",
+  Vs = "Visual",
+  ["\22"] = "Visual",
+  ["\22s"] = "Visual",
+  s = "Type",
+  S = "Type",
+  ["\19"] = "Type",
+  i = "String",
+  ic = "String",
+  ix = "String",
+  R = "WarningMsg",
+  Rc = "WarningMsg",
+  Rx = "WarningMsg",
+  Rv = "WarningMsg",
+  c = "Statement",
+  cv = "Statement",
+  ce = "Statement",
+  r = "Special",
+  rm = "Special",
+  ["r?"] = "Special",
+  ["!"] = "DiagnosticError",
+  t = "DiagnosticError",
 }
 
 local function statusline_win()
@@ -186,18 +148,7 @@ local ViMode = {
     return " " .. name .. " "
   end,
   hl = function(self)
-    local bg = mode_colors[self.mode] or mode_colors[self.mode:sub(1, 1)] or colors.blue
-    return { fg = colors.base03, bg = bg, bold = true }
-  end,
-  update = { "ModeChanged", "BufEnter", "WinEnter" },
-}
-
-local ModeSep = {
-  provider = "",
-  hl = function()
-    local m = vim.fn.mode(1)
-    local bg = mode_colors[m] or mode_colors[m:sub(1, 1)] or colors.blue
-    return { fg = bg, bg = colors.base03 }
+    return mode_highlights[self.mode] or mode_highlights[self.mode:sub(1, 1)] or "StatusLine"
   end,
   update = { "ModeChanged", "BufEnter", "WinEnter" },
 }
@@ -227,7 +178,7 @@ local FileBlock = {
       return self.icon .. " "
     end,
     hl = function(self)
-      return { fg = self.icon_color or colors.blue }
+      return { fg = self.icon_color }
     end,
   },
   {
@@ -236,9 +187,9 @@ local FileBlock = {
     end,
     hl = function(self)
       if self.modified then
-        return { fg = colors.base2, bold = true }
+        return "WarningMsg"
       end
-      return { fg = colors.base1 }
+      return "StatusLine"
     end,
   },
   {
@@ -257,9 +208,9 @@ local FileBlock = {
     end,
     hl = function(self)
       if self.modified then
-        return { fg = colors.yellow, bold = true }
+        return "WarningMsg"
       end
-      return { fg = colors.orange }
+      return "StatusLine"
     end,
   },
 }
@@ -286,7 +237,7 @@ local Git = {
       end
       return " " .. self.head
     end,
-    hl = { fg = colors.violet, bold = true },
+    hl = "Identifier",
   },
   {
     provider = function(self)
@@ -305,7 +256,7 @@ local Git = {
       end
       return " (" .. table.concat(parts, " ") .. ")"
     end,
-    hl = { fg = colors.base0 },
+    hl = "StatusLine",
   },
 }
 
@@ -333,7 +284,7 @@ local Diagnostics = {
       end
       return " " .. self.errors .. " "
     end,
-    hl = { fg = colors.red },
+    hl = "DiagnosticError",
   },
   {
     provider = function(self)
@@ -342,7 +293,7 @@ local Diagnostics = {
       end
       return " " .. self.warns .. " "
     end,
-    hl = { fg = colors.yellow },
+    hl = "DiagnosticWarn",
   },
   {
     provider = function(self)
@@ -351,7 +302,7 @@ local Diagnostics = {
       end
       return " " .. self.infos .. " "
     end,
-    hl = { fg = colors.blue },
+    hl = "DiagnosticInfo",
   },
   {
     provider = function(self)
@@ -360,9 +311,8 @@ local Diagnostics = {
       end
       return "󰌵 " .. self.hints .. " "
     end,
-    hl = { fg = colors.cyan },
+    hl = "DiagnosticHint",
   },
-  hl = { bg = colors.base02 },
 }
 
 local Lsp = {
@@ -391,7 +341,7 @@ local Lsp = {
   provider = function(self)
     return "  " .. table.concat(self.lsp_names, ", ") .. " "
   end,
-  hl = { fg = colors.cyan, bg = colors.base02 },
+  hl = "Special",
 }
 
 local FileType = {
@@ -404,7 +354,7 @@ local FileType = {
     local ft = self.ft ~= "" and self.ft or "text"
     return " " .. ft .. " "
   end,
-  hl = { fg = colors.base1, bg = colors.base02 },
+  hl = "StatusLine",
 }
 
 local Ruler = {
@@ -420,7 +370,7 @@ local Ruler = {
   provider = function(self)
     return string.format(" %d:%d %d%% ", self.line, self.col, self.percent)
   end,
-  hl = { fg = colors.base2, bg = colors.base01, bold = true },
+  hl = "StatusLine",
 }
 
 local ScrollBar = {
@@ -438,38 +388,25 @@ local ScrollBar = {
   provider = function(self)
     return self.bar .. " "
   end,
-  hl = { fg = colors.blue, bg = colors.base01, bold = true },
-}
-
-local RightSep = {
-  provider = "",
-  hl = { fg = colors.base02, bg = colors.base03 },
-}
-
-local RightSepAlt = {
-  provider = "",
-  hl = { fg = colors.base01, bg = colors.base02 },
+  hl = "StatusLine",
 }
 
 local ActiveStatusline = {
   condition = is_active,
-  hl = { fg = colors.base1, bg = colors.base03 },
+  hl = "StatusLine",
   ViMode,
-  ModeSep,
   FileBlock,
   Git,
   Align,
-  RightSep,
   Diagnostics,
   Lsp,
   FileType,
-  RightSepAlt,
   Ruler,
   ScrollBar,
 }
 
 local InactiveStatusline = {
-  hl = { fg = colors.base0, bg = colors.base03 },
+  hl = "StatusLineNC",
   Space,
   FileBlock,
   Align,
@@ -483,7 +420,7 @@ local InactiveStatusline = {
       local cursor = vim.api.nvim_win_get_cursor(self.winid)
       return string.format(" %d:%d ", cursor[1], cursor[2] + 1)
     end,
-    hl = { fg = colors.base0, bg = colors.base02 },
+    hl = "StatusLineNC",
   },
 }
 
