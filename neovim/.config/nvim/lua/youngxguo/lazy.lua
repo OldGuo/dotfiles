@@ -51,11 +51,16 @@ require("lazy").setup({
     priority = 1000,
     opts = {
       style = "moon",
+      transparent = vim.env.NVIM_TRANSPARENT ~= "0",
+      terminal_colors = false,
+      styles = {
+        sidebars = "transparent",
+        floats = "transparent",
+      },
     },
     config = function(_, opts)
       require("tokyonight").setup(opts)
       vim.o.termguicolors = true
-      vim.o.background = "dark"
       vim.cmd.colorscheme("tokyonight")
     end,
   },
