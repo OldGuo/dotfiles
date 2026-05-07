@@ -5,22 +5,42 @@ end
 
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
+local function hex(value)
+  if not value then
+    return nil
+  end
+  return string.format("#%06x", value)
+end
+
+local function hl(name)
+  return vim.api.nvim_get_hl(0, { name = name, link = false })
+end
+
+local function hl_color(names, key, fallback)
+  for _, name in ipairs(names) do
+    local color = hex(hl(name)[key])
+    if color then
+      return color
+    end
+  end
+  return fallback
+end
+
 local colors = {
-  base03 = "#002b36",
-  base02 = "#073642",
-  base01 = "#586e75",
-  base00 = "#657b83",
-  base0 = "#839496",
-  base1 = "#93a1a1",
-  base2 = "#eee8d5",
-  blue = "#268bd2",
-  cyan = "#2aa198",
-  green = "#859900",
-  orange = "#cb4b16",
-  red = "#dc322f",
-  magenta = "#d33682",
-  violet = "#6c71c4",
-  yellow = "#b58900",
+  base03 = hl_color({ "StatusLine", "CursorLine" }, "bg", "#222436"),
+  base02 = hl_color({ "CursorLine", "StatusLine" }, "bg", "#2f334d"),
+  base01 = hl_color({ "Visual", "StatusLineNC" }, "bg", "#444a73"),
+  base0 = hl_color({ "StatusLineNC", "Comment" }, "fg", "#828bb8"),
+  base1 = hl_color({ "StatusLine", "Normal" }, "fg", "#c8d3f5"),
+  base2 = hl_color({ "Normal", "StatusLine" }, "fg", "#c8d3f5"),
+  blue = hl_color({ "DiagnosticInfo", "Function" }, "fg", "#82aaff"),
+  cyan = hl_color({ "DiagnosticHint", "Special" }, "fg", "#86e1fc"),
+  green = hl_color({ "DiagnosticOk", "String" }, "fg", "#c3e88d"),
+  orange = hl_color({ "Number", "Constant" }, "fg", "#ff966c"),
+  red = hl_color({ "DiagnosticError", "ErrorMsg" }, "fg", "#ff757f"),
+  magenta = hl_color({ "Keyword", "Statement" }, "fg", "#c099ff"),
+  violet = hl_color({ "Type", "Identifier" }, "fg", "#4fd6be"),
+  yellow = hl_color({ "DiagnosticWarn", "WarningMsg" }, "fg", "#ffc777"),
 }
 
 local mode_names = {
