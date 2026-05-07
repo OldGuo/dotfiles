@@ -17,12 +17,12 @@ source $ZSH/oh-my-zsh.sh
 [ -s "$HOME/.scm_breeze/scm_breeze.sh" ] && source "$HOME/.scm_breeze/scm_breeze.sh"
 
 # fzf
-if command -v fzf >/dev/null 2>&1; then
+if [[ -o zle ]] && command -v fzf >/dev/null 2>&1; then
   source <(fzf --zsh)
-elif [ -f ~/.fzf.zsh ]; then
+elif [[ -o zle ]] && [ -f ~/.fzf.zsh ]; then
   source ~/.fzf.zsh
 fi
-eval "$(direnv hook zsh)"
+command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
 
 # git
 export GIT_EDITOR=nvim
@@ -34,3 +34,6 @@ alias gcoma="git commit --amend"
 alias vim="nvim"
 
 export PATH="$HOME/.local/bin:$PATH"
+
+# personal aliases/functions/secrets live outside the dotfiles repo
+[ -r "$HOME/.personal-plugins/.shell_config" ] && source "$HOME/.personal-plugins/.shell_config"
