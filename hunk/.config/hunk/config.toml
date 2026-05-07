@@ -1,4 +1,4 @@
-theme = "midnight"
+theme = "graphite"
 mode = "auto"
 exclude_untracked = true
 line_numbers = true
