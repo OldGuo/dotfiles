@@ -116,7 +116,7 @@ vim.keymap.set("n", "<leader>gl", function()
     return
   end
 
-  vim.cmd("DiffviewFileHistory")
+  vim.cmd("DiffviewFileHistory --max-count=20")
 end, { silent = true, desc = "Git history (Diffview)" })
 
 vim.keymap.set("n", "<leader>gL", function()
