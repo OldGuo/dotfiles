@@ -390,6 +390,15 @@ def install_codex():
     link_file(source, HOME / ".codex/config.toml")
 
 
+def install_hunk():
+    source = REPO_ROOT / "hunk/.config/hunk/config.toml"
+    if not source.exists():
+        print("skipping hunk config: no repo-local hunk/config.toml present")
+        return
+    print("applying hunk config")
+    link_file(source, HOME / ".config/hunk/config.toml")
+
+
 def install_neovim():
     if VERIFY_MODE:
         print("verify mode: skipping neovim package/bootstrap")
@@ -407,6 +416,7 @@ def install_neovim():
     install_homebrew_only_package("chafa")
     install_homebrew_only_package("viu")
     install_homebrew_only_package("mercurial")
+    install_npm_global("hunkdiff", ("hunk",))
     install_npm_global("vscode-langservers-extracted", ("vscode-eslint-language-server",))
     ensure_fd_compat_shim()
     if not command_exists("nvim"):
@@ -425,6 +435,7 @@ def run_install_flow():
     install_tmux()
     install_vscode()
     install_codex()
+    install_hunk()
     install_scm_breeze()
     install_neovim()
     print("Done")
