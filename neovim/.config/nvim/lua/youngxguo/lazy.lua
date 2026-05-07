@@ -46,18 +46,17 @@ require("lazy").setup({
     },
   },
   {
-    "maxmx03/solarized.nvim",
-    config = function()
-      local solarized = require("solarized")
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = {
+      style = "moon",
+    },
+    config = function(_, opts)
+      require("tokyonight").setup(opts)
       vim.o.termguicolors = true
       vim.o.background = "dark"
-      solarized.setup({})
-      vim.cmd.colorscheme("solarized")
-      -- Diff highlights: background-only so syntax highlighting is preserved
-      vim.api.nvim_set_hl(0, "DiffAdd", { bg = "#003a20" })
-      vim.api.nvim_set_hl(0, "DiffDelete", { bg = "#3a0a10" })
-      vim.api.nvim_set_hl(0, "DiffChange", { bg = "#002a40" })
-      vim.api.nvim_set_hl(0, "DiffText", { bg = "#004a55" })
+      vim.cmd.colorscheme("tokyonight")
     end,
   },
   {

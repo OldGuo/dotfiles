@@ -332,6 +332,11 @@ def install_ghostty():
     if shader_dir.is_dir():
         for shader_file in sorted(shader_dir.glob("*.glsl")):
             link_file(shader_file, HOME / ".config/ghostty/shaders" / shader_file.name)
+    theme_dir = REPO_ROOT / "ghostty/themes"
+    if theme_dir.is_dir():
+        for theme_file in sorted(theme_dir.iterdir()):
+            if theme_file.is_file():
+                link_file(theme_file, HOME / ".config/ghostty/themes" / theme_file.name)
 
 
 def install_tmux():
