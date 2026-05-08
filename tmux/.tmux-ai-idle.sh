@@ -12,8 +12,8 @@ from pathlib import Path
 
 
 IDLE_THRESHOLD = 15
-IDLE_COLORS = ("#[fg=#eee8d5,bg=#dc322f,bold]", "#[fg=#eee8d5,bg=#ff6961,bold]")
-THINKING_COLORS = ("#[fg=#002b36,bg=#ffd700,bold]", "#[fg=#002b36,bg=#f0ad4e,bold]")
+IDLE_COLORS = ("#[fg=#fdf6e3,bg=#dc322f,bold]", "#[fg=#fdf6e3,bg=#cb4b16,bold]")
+THINKING_COLORS = ("#[fg=#002b36,bg=#b58900,bold]", "#[fg=#002b36,bg=#859900,bold]")
 AI_COMMAND_RE = re.compile(r"(^|[ /])(claude|codex|agent|cursor-agent)([ \t/\n]|$)", re.IGNORECASE)
 
 
