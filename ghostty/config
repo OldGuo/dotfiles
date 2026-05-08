@@ -1,7 +1,7 @@
 font-family = "MesloLGS Nerd Font Mono"
 # Needed for Neovim UI glyphs (Heirline separators/icons, devicons, etc.)
 font-size = 16
-theme = "tokyonight_moon"
+theme = "solarized_dark"
 cursor-style = block
 shell-integration-features = no-cursor
 custom-shader = ./shaders/cursor-smear-fade.glsl

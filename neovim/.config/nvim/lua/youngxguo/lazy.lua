@@ -46,22 +46,26 @@ require("lazy").setup({
     },
   },
   {
-    "folke/tokyonight.nvim",
+    "maxmx03/solarized.nvim",
     lazy = false,
     priority = 1000,
     opts = {
-      style = "moon",
-      transparent = vim.env.NVIM_TRANSPARENT ~= "0",
-      terminal_colors = false,
-      styles = {
-        sidebars = "transparent",
-        floats = "transparent",
+      transparent = {
+        enabled = vim.env.NVIM_TRANSPARENT ~= "0",
+        normal = true,
+        normalfloat = true,
+        nvimtree = true,
+        telescope = true,
+        lazy = true,
       },
+      palette = "solarized",
+      variant = "winter",
     },
     config = function(_, opts)
-      require("tokyonight").setup(opts)
       vim.o.termguicolors = true
-      vim.cmd.colorscheme("tokyonight")
+      vim.o.background = "dark"
+      require("solarized").setup(opts)
+      vim.cmd.colorscheme("solarized")
     end,
   },
   {
