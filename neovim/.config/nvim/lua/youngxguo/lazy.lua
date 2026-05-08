@@ -12,6 +12,14 @@ end
 
 vim.opt.rtp:prepend(lazypath)
 
+local function apply_diff_highlights()
+  -- Background-only diff colors preserve syntax highlighting in Diffview buffers.
+  vim.api.nvim_set_hl(0, "DiffAdd", { bg = "#003a20" })
+  vim.api.nvim_set_hl(0, "DiffDelete", { bg = "#3a0a10" })
+  vim.api.nvim_set_hl(0, "DiffChange", { bg = "#002a40" })
+  vim.api.nvim_set_hl(0, "DiffText", { bg = "#004a55" })
+end
+
 -- Initialize vim.lsp.config['*'] before plugins load (blink.cmp v1.x reads it)
 if vim.lsp.config then
   vim.lsp.config('*', {})
@@ -66,6 +74,7 @@ require("lazy").setup({
       vim.o.background = "dark"
       require("solarized").setup(opts)
       vim.cmd.colorscheme("solarized")
+      apply_diff_highlights()
     end,
   },
   {
