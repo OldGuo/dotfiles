@@ -19,6 +19,10 @@ local solarized_ui = {
   base0 = "#839496",
   base1 = "#93a1a1",
   base2 = "#eee8d5",
+  green = "#859900",
+  yellow = "#b58900",
+  orange = "#cb4b16",
+  red = "#dc322f",
   blue = "#268bd2",
   cyan = "#2aa198",
 }
@@ -42,6 +46,17 @@ local function apply_ui_highlights()
   vim.api.nvim_set_hl(0, "SignColumn", { fg = solarized_ui.base1 })
   vim.api.nvim_set_hl(0, "LineNr", { fg = solarized_ui.base01 })
   vim.api.nvim_set_hl(0, "CursorLineNr", { fg = solarized_ui.cyan, bg = solarized_ui.base02, bold = true })
+
+  vim.api.nvim_set_hl(0, "YoungFidgetNormal", { fg = solarized_ui.base1, bg = solarized_ui.base03 })
+  vim.api.nvim_set_hl(0, "YoungFidgetGroup", { fg = solarized_ui.blue, bold = true })
+  vim.api.nvim_set_hl(0, "YoungFidgetIcon", { fg = solarized_ui.cyan })
+  vim.api.nvim_set_hl(0, "YoungFidgetProgress", { fg = solarized_ui.yellow })
+  vim.api.nvim_set_hl(0, "YoungFidgetDone", { fg = solarized_ui.green })
+  vim.api.nvim_set_hl(0, "YoungFidgetInfo", { fg = solarized_ui.cyan })
+  vim.api.nvim_set_hl(0, "YoungFidgetWarn", { fg = solarized_ui.orange })
+  vim.api.nvim_set_hl(0, "YoungFidgetError", { fg = solarized_ui.red, bold = true })
+  vim.api.nvim_set_hl(0, "YoungFidgetDebug", { fg = solarized_ui.base01 })
+  vim.api.nvim_set_hl(0, "YoungFidgetSeparator", { fg = solarized_ui.base01 })
 end
 
 local function bufferline_highlights()
@@ -136,13 +151,40 @@ require("lazy").setup({
   { "stevearc/conform.nvim", lazy = false },
   {
     "j-hui/fidget.nvim",
-    opts = {
-      notification = {
-        window = {
-          avoid = { "NvimTree" },
+    opts = function()
+      local default_config = require("fidget.notification").default_config
+
+      return {
+        progress = {
+          display = {
+            done_style = "YoungFidgetDone",
+            progress_style = "YoungFidgetProgress",
+            group_style = "YoungFidgetGroup",
+            icon_style = "YoungFidgetIcon",
+          },
         },
-      },
-    },
+        notification = {
+          configs = {
+            default = vim.tbl_extend("force", default_config, {
+              group_style = "YoungFidgetGroup",
+              icon_style = "YoungFidgetIcon",
+              annote_style = "YoungFidgetInfo",
+              debug_style = "YoungFidgetDebug",
+              info_style = "YoungFidgetInfo",
+              warn_style = "YoungFidgetWarn",
+              error_style = "YoungFidgetError",
+            }),
+          },
+          view = {
+            group_separator_hl = "YoungFidgetSeparator",
+          },
+          window = {
+            normal_hl = "YoungFidgetNormal",
+            avoid = { "NvimTree" },
+          },
+        },
+      }
+    end,
   },
   {
     "saghen/blink.cmp",
