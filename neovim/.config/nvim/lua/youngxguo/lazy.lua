@@ -12,12 +12,55 @@ end
 
 vim.opt.rtp:prepend(lazypath)
 
+local solarized_ui = {
+  base03 = "#002b36",
+  base02 = "#073642",
+  base01 = "#586e75",
+  base0 = "#839496",
+  base1 = "#93a1a1",
+  base2 = "#eee8d5",
+  blue = "#268bd2",
+  cyan = "#2aa198",
+}
+
 local function apply_diff_highlights()
   -- Background-only diff colors preserve syntax highlighting in Diffview buffers.
   vim.api.nvim_set_hl(0, "DiffAdd", { bg = "#003a20" })
   vim.api.nvim_set_hl(0, "DiffDelete", { bg = "#3a0a10" })
   vim.api.nvim_set_hl(0, "DiffChange", { bg = "#002a40" })
   vim.api.nvim_set_hl(0, "DiffText", { bg = "#004a55" })
+end
+
+local function apply_ui_highlights()
+  vim.api.nvim_set_hl(0, "StatusLine", { fg = solarized_ui.base1, bg = solarized_ui.base03 })
+  vim.api.nvim_set_hl(0, "StatusLineNC", { fg = solarized_ui.base01, bg = solarized_ui.base03 })
+  vim.api.nvim_set_hl(0, "TabLine", { fg = solarized_ui.base0, bg = solarized_ui.base03 })
+  vim.api.nvim_set_hl(0, "TabLineSel", { fg = solarized_ui.base03, bg = solarized_ui.blue, bold = true })
+  vim.api.nvim_set_hl(0, "TabLineFill", { bg = solarized_ui.base03 })
+  vim.api.nvim_set_hl(0, "WinSeparator", { fg = solarized_ui.base02, bg = solarized_ui.base03 })
+  vim.api.nvim_set_hl(0, "SignColumn", { fg = solarized_ui.base1 })
+  vim.api.nvim_set_hl(0, "LineNr", { fg = solarized_ui.base01 })
+  vim.api.nvim_set_hl(0, "CursorLineNr", { fg = solarized_ui.cyan, bg = solarized_ui.base02, bold = true })
+end
+
+local function bufferline_highlights()
+  return {
+    fill = { bg = solarized_ui.base03 },
+    background = { fg = solarized_ui.base0, bg = solarized_ui.base03 },
+    buffer_visible = { fg = solarized_ui.base0, bg = solarized_ui.base03 },
+    buffer_selected = { fg = solarized_ui.base03, bg = solarized_ui.blue, bold = true, italic = false },
+    indicator_selected = { fg = solarized_ui.base03, bg = solarized_ui.blue },
+    tab = { fg = solarized_ui.base0, bg = solarized_ui.base03 },
+    tab_selected = { fg = solarized_ui.base03, bg = solarized_ui.blue, bold = true },
+    tab_separator = { fg = solarized_ui.base02, bg = solarized_ui.base03 },
+    tab_separator_selected = { fg = solarized_ui.blue, bg = solarized_ui.blue },
+    separator = { fg = solarized_ui.base02, bg = solarized_ui.base03 },
+    separator_visible = { fg = solarized_ui.base02, bg = solarized_ui.base03 },
+    separator_selected = { fg = solarized_ui.blue, bg = solarized_ui.blue },
+    modified = { fg = solarized_ui.base2, bg = solarized_ui.base03 },
+    modified_visible = { fg = solarized_ui.base2, bg = solarized_ui.base03 },
+    modified_selected = { fg = solarized_ui.base03, bg = solarized_ui.blue },
+  }
 end
 
 -- Initialize vim.lsp.config['*'] before plugins load (blink.cmp v1.x reads it)
@@ -75,6 +118,7 @@ require("lazy").setup({
       require("solarized").setup(opts)
       vim.cmd.colorscheme("solarized")
       apply_diff_highlights()
+      apply_ui_highlights()
     end,
   },
   {
@@ -205,7 +249,9 @@ require("lazy").setup({
     "akinsho/bufferline.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
+      highlights = bufferline_highlights(),
       options = {
+        themable = false,
         diagnostics = "nvim_lsp",
         diagnostics_indicator = function(_, _, diagnostics_dict)
           local s = " "
