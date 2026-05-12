@@ -16,11 +16,22 @@ source $ZSH/oh-my-zsh.sh
 # scm breeze
 [ -s "$HOME/.scm_breeze/scm_breeze.sh" ] && source "$HOME/.scm_breeze/scm_breeze.sh"
 
-# fzf
-if [[ -o zle ]] && command -v fzf >/dev/null 2>&1; then
-  source <(fzf --zsh)
-elif [[ -o zle ]] && [ -f ~/.fzf.zsh ]; then
-  source ~/.fzf.zsh
+# fzf — Ctrl+R / Ctrl+T / Esc-c (repeat `source ~/.zshrc`: no-op)
+if [[ -z ${_dotfiles_fzf_rc-} && -o zle ]] && (( ${+commands[fzf]} )); then
+  () {
+    emulate -L zsh
+    local fzhome="$commands[fzf]:A"
+    local fzf_shell="$fzhome:h/../shell"
+    if [[ -f ~/.fzf.zsh ]]; then
+      source ~/.fzf.zsh
+    elif [[ -r $fzf_shell/key-bindings.zsh ]]; then
+      [[ -r $fzf_shell/completion.zsh ]] && source "$fzf_shell/completion.zsh"
+      source "$fzf_shell/key-bindings.zsh"
+    else
+      source <(command fzf --zsh 2>/dev/null)
+    fi
+  }
+  _dotfiles_fzf_rc=1
 fi
 command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
 
