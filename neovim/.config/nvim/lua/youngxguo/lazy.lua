@@ -47,16 +47,17 @@ local function apply_ui_highlights()
   vim.api.nvim_set_hl(0, "LineNr", { fg = solarized_ui.base01 })
   vim.api.nvim_set_hl(0, "CursorLineNr", { fg = solarized_ui.cyan, bg = solarized_ui.base02, bold = true })
 
-  vim.api.nvim_set_hl(0, "YoungFidgetNormal", { fg = solarized_ui.base1, bg = solarized_ui.base03 })
-  vim.api.nvim_set_hl(0, "YoungFidgetGroup", { fg = solarized_ui.blue, bold = true })
-  vim.api.nvim_set_hl(0, "YoungFidgetIcon", { fg = solarized_ui.cyan })
-  vim.api.nvim_set_hl(0, "YoungFidgetProgress", { fg = solarized_ui.yellow })
-  vim.api.nvim_set_hl(0, "YoungFidgetDone", { fg = solarized_ui.green })
-  vim.api.nvim_set_hl(0, "YoungFidgetInfo", { fg = solarized_ui.cyan })
-  vim.api.nvim_set_hl(0, "YoungFidgetWarn", { fg = solarized_ui.orange })
-  vim.api.nvim_set_hl(0, "YoungFidgetError", { fg = solarized_ui.red, bold = true })
-  vim.api.nvim_set_hl(0, "YoungFidgetDebug", { fg = solarized_ui.base01 })
-  vim.api.nvim_set_hl(0, "YoungFidgetSeparator", { fg = solarized_ui.base01 })
+  local fidget_bg = solarized_ui.base02
+  vim.api.nvim_set_hl(0, "YoungFidgetNormal", { fg = solarized_ui.base1, bg = fidget_bg })
+  vim.api.nvim_set_hl(0, "YoungFidgetGroup", { fg = solarized_ui.blue, bg = fidget_bg, bold = true })
+  vim.api.nvim_set_hl(0, "YoungFidgetIcon", { fg = solarized_ui.cyan, bg = fidget_bg })
+  vim.api.nvim_set_hl(0, "YoungFidgetProgress", { fg = solarized_ui.yellow, bg = fidget_bg })
+  vim.api.nvim_set_hl(0, "YoungFidgetDone", { fg = solarized_ui.green, bg = fidget_bg })
+  vim.api.nvim_set_hl(0, "YoungFidgetInfo", { fg = solarized_ui.cyan, bg = fidget_bg })
+  vim.api.nvim_set_hl(0, "YoungFidgetWarn", { fg = solarized_ui.orange, bg = fidget_bg })
+  vim.api.nvim_set_hl(0, "YoungFidgetError", { fg = solarized_ui.red, bg = fidget_bg, bold = true })
+  vim.api.nvim_set_hl(0, "YoungFidgetDebug", { fg = solarized_ui.base01, bg = fidget_bg })
+  vim.api.nvim_set_hl(0, "YoungFidgetSeparator", { fg = solarized_ui.base01, bg = fidget_bg })
 end
 
 local function bufferline_highlights()
@@ -180,6 +181,7 @@ require("lazy").setup({
           },
           window = {
             normal_hl = "YoungFidgetNormal",
+            winblend = 0,
             avoid = { "NvimTree" },
           },
         },
