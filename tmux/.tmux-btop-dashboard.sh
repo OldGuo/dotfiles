@@ -7,5 +7,5 @@ if [ -z "${TMUX:-}" ]; then
 fi
 
 tmux new-window -n btop 'btop --preset 2'
-tmux split-window -h -p 55 'btop --preset 3'
-tmux select-pane -L
+tmux split-window -v -p 60 'btop --preset 3'
+tmux select-pane -U
