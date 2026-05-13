@@ -8,4 +8,6 @@ fi
 
 tmux new-window -n btop 'btop --preset 2'
 tmux split-window -v -p 60 'btop --preset 3'
+tmux split-window -v -l 8 '~/.tmux-disk-space.sh'
+tmux select-pane -U
 tmux select-pane -U
