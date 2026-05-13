@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
+import hashlib
 import os
+import platform
 import shlex
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +18,21 @@ REPO_ROOT = Path(__file__).resolve().parent
 HOME = Path.home()
 LINUX_APT_UPDATED = False
 VERIFY_MODE = False
+BTOP_VERSION = "v1.4.7"
+BTOP_LINUX_RELEASES = {
+    "aarch64": (
+        "btop-aarch64-unknown-linux-musl.tar.gz",
+        "6270de0ef4c84cf0eea61cb148b3ad9ae91a11e9c3309867ffc6b3751024c252",
+    ),
+    "arm64": (
+        "btop-aarch64-unknown-linux-musl.tar.gz",
+        "6270de0ef4c84cf0eea61cb148b3ad9ae91a11e9c3309867ffc6b3751024c252",
+    ),
+    "x86_64": (
+        "btop-x86_64-unknown-linux-musl.tar.gz",
+        "5099054dd6a101bd12eb6ff3702a9a6a3f57aaa27923a0da478ae5b517faf335",
+    ),
+}
 
 LINUX_PACKAGE_OVERRIDES = {
     "fd": {
@@ -41,6 +59,7 @@ PACKAGE_BINARIES = {
     "tmux": ("tmux",),
     "direnv": ("direnv",),
     "fzf": ("fzf",),
+    "btop": ("btop",),
 }
 
 
@@ -169,6 +188,79 @@ def install_package(pkg):
     else:
         run(["brew", "install", pkg])
         return True
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def extract_tar_safely(tar, destination):
+    destination = Path(destination).resolve()
+    for member in tar.getmembers():
+        target = (destination / member.name).resolve()
+        if target != destination and destination not in target.parents:
+            raise RuntimeError(f"refusing to extract unsafe tar member: {member.name}")
+    tar.extractall(destination)
+
+
+def install_btop_linux_release():
+    machine = platform.machine().lower()
+    asset = BTOP_LINUX_RELEASES.get(machine)
+    if not asset:
+        print(f"skipping btop: unsupported linux architecture {machine}")
+        return False
+
+    filename, expected_sha256 = asset
+    url = f"https://github.com/aristocratos/btop/releases/download/{BTOP_VERSION}/{filename}"
+    print(f"installing btop {BTOP_VERSION} from upstream release")
+
+    with tempfile.TemporaryDirectory(prefix="btop-install-") as tmpdir:
+        tmpdir_path = Path(tmpdir)
+        archive = tmpdir_path / filename
+        run(["curl", "-fsSL", "-o", str(archive), url])
+
+        actual_sha256 = sha256_file(archive)
+        if actual_sha256 != expected_sha256:
+            raise RuntimeError(
+                f"checksum mismatch for {filename}: expected {expected_sha256}, got {actual_sha256}"
+            )
+
+        with tarfile.open(archive, "r:gz") as tar:
+            extract_tar_safely(tar, tmpdir_path)
+
+        source = tmpdir_path / "btop"
+        local_bin = HOME / ".local/bin"
+        local_share = HOME / ".local/share/btop"
+        local_bin.mkdir(parents=True, exist_ok=True)
+        local_share.mkdir(parents=True, exist_ok=True)
+
+        shutil.copy2(source / "bin/btop", local_bin / "btop")
+        (local_bin / "btop").chmod(0o755)
+        shutil.copy2(source / "README.md", local_share / "README.md")
+        shutil.copytree(source / "themes", local_share / "themes", dirs_exist_ok=True)
+
+    return pkg_installed("btop")
+
+
+def install_btop():
+    print("installing btop")
+    if VERIFY_MODE:
+        print("verify mode: skipping btop package/bootstrap")
+    elif pkg_installed("btop"):
+        print("btop already installed")
+    elif command_exists("brew"):
+        install_package("btop")
+    elif sys.platform.startswith("linux"):
+        install_btop_linux_release()
+    else:
+        print("skipping btop: no supported installer available")
+
+    print("applying btop config")
+    link_file(REPO_ROOT / "btop/.config/btop/btop.conf", HOME / ".config/btop/btop.conf")
 
 
 def install_homebrew_only_package(pkg):
@@ -433,6 +525,7 @@ def run_install_flow():
     install_zsh_stack()
     install_ghostty()
     install_tmux()
+    install_btop()
     install_vscode()
     install_codex()
     install_hunk()

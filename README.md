@@ -3,6 +3,7 @@
 Personal macOS/Linux dotfiles bootstrap for:
 - `zsh`
 - `tmux`
+- `btop`
 - `neovim`
 - `ghostty`
 - `vscode`
@@ -28,6 +29,7 @@ APPLY_LOGIN_SHELL=1 python3 install.py
 
 ## What Install Does
 - Installs missing packages via Homebrew (or Linux package manager fallback: `apt`/`dnf`/`pacman`/`zypper`) for `zsh`, `direnv`, `fzf`, `tmux`, `neovim`, `ripgrep`, `fd`
+- Installs `btop` via Homebrew when available, or a verified upstream Linux binary on supported Linux architectures
 - Installs Homebrew-managed Neovim helper tools when Homebrew is available: `prettier`, `tree-sitter-cli`, `typescript-language-server`, `basedpyright`, `gh`, `chafa`, `viu`, `mercurial`
 - Installs the ESLint language server from npm when `npm` is available
 - Installs Oh My Zsh and shell plugins
@@ -67,6 +69,7 @@ SKIP_DOTFILES_PREPUSH=1 git push
 - Confirm symlinks:
   - `ls -l ~/.zshrc`
   - `ls -l ~/.tmux.conf`
+  - `ls -l ~/.config/btop/btop.conf`
   - `ls -l ~/.config/nvim`
   - `ls -l ~/.config/ghostty/config`
   - `ls -l ~/Library/Application\\ Support/Code/User/settings.json`
