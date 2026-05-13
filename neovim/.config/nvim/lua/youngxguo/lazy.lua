@@ -314,6 +314,14 @@ require("lazy").setup({
     },
   },
   { "numToStr/Comment.nvim", opts = {} },
+  {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    opts = {
+      check_ts = true,
+      map_cr = false,
+    },
+  },
   { "tpope/vim-fugitive" },
   {
     "NeogitOrg/neogit",
