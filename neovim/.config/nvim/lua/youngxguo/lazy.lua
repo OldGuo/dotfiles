@@ -104,9 +104,18 @@ require("lazy").setup({
         ["--layout"] = "reverse",
       },
       files = {
+        formatter = "path.filename_first",
         hidden = true,
         rg_opts = [[--color=never --hidden --files -g "!.git" -g "!node_modules/**" -g "!bazel-out/**" -g "!bazel-bin/**" -g "!bazel-testlogs/**" -g "!bazel-applied*/**" -g "!lcov-report/**" -g "!map_tiles/**" -g "!*.generated" -g "!data/py/**"]],
         fd_opts = [[--color=never --hidden --type f --type l --exclude .git --exclude node_modules --exclude bazel-out --exclude bazel-bin --exclude bazel-testlogs --exclude bazel-applied* --exclude lcov-report --exclude map_tiles --exclude data/py --exclude *.generated]],
+      },
+      git = {
+        files = {
+          formatter = "path.filename_first",
+        },
+      },
+      global = {
+        formatter = "path.filename_first",
       },
       grep = {
         rg_opts = [[--column --line-number --no-heading --color=always --smart-case --max-columns=4096 --glob "!.git" --glob "!node_modules/**" --glob "!bazel-out/**" --glob "!bazel-bin/**" --glob "!bazel-testlogs/**" --glob "!bazel-applied*/**" --glob "!lcov-report/**" --glob "!map_tiles/**" --glob "!*.generated" --glob "!data/py/**" -e]],
