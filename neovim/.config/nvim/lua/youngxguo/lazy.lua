@@ -91,7 +91,9 @@ require("lazy").setup({
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
       "telescope",
-      defaults = {},
+      defaults = {
+        formatter = "path.filename_first",
+      },
       winopts = {
         height = 0.95,
         width = 0.95,
@@ -118,6 +120,7 @@ require("lazy").setup({
         formatter = "path.filename_first",
       },
       grep = {
+        formatter = "path.filename_first",
         rg_opts = [[--column --line-number --no-heading --color=always --smart-case --max-columns=4096 --glob "!.git" --glob "!node_modules/**" --glob "!bazel-out/**" --glob "!bazel-bin/**" --glob "!bazel-testlogs/**" --glob "!bazel-applied*/**" --glob "!lcov-report/**" --glob "!map_tiles/**" --glob "!*.generated" --glob "!data/py/**" -e]],
       },
     },
