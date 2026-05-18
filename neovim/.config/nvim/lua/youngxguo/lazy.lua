@@ -77,6 +77,9 @@ local function bufferline_highlights()
     modified = { fg = solarized_ui.base2, bg = solarized_ui.base03 },
     modified_visible = { fg = solarized_ui.base2, bg = solarized_ui.base03 },
     modified_selected = { fg = solarized_ui.base03, bg = solarized_ui.blue },
+    duplicate = { fg = solarized_ui.base01, bg = solarized_ui.base03, italic = false },
+    duplicate_visible = { fg = solarized_ui.base01, bg = solarized_ui.base03, italic = false },
+    duplicate_selected = { fg = solarized_ui.base02, bg = solarized_ui.blue, bold = true, italic = false },
   }
 end
 
