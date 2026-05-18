@@ -32,16 +32,14 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.lsp.buf.hover()
       end
     end, opts)
-    vim.keymap.set('n', 'gr', '<cmd>lua vim.lsp.buf.references()<cr>', opts)
+    vim.keymap.set('n', 'gr', '<cmd>FzfLua lsp_references<cr>', opts)
     vim.keymap.set('n', '<leader>dd', function()
       require("fzf-lua").diagnostics_document()
     end, opts)
     vim.keymap.set('n', '<leader>dw', function()
       require("fzf-lua").diagnostics_workspace()
     end, opts)
-    vim.keymap.set('n', '<leader>pr', function()
-      require("fzf-lua").lsp_references()
-    end, opts)
+    vim.keymap.set('n', '<leader>pr', '<cmd>FzfLua lsp_references<cr>', opts)
   end,
 })
 
