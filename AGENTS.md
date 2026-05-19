@@ -12,6 +12,7 @@
 - Do not commit secrets, local env files, or machine-specific generated files.
 - Review `git status` before every commit to avoid accidental file adds.
 - Prefer feature branches for larger changes instead of committing directly to shared branches.
+- Do not require PRs by default. Direct pushes to `main` are acceptable in personal or shared automation repos when that repo's policy allows it, such as `~/claude-code-shared`.
 - Avoid force-pushing shared branches unless everyone involved agrees.
 
 ## Suggested Workflow
