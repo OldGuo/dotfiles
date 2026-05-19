@@ -1,4 +1,6 @@
-# Personal Source-Control Preference
+# Personal Context
+
+## Source Control
 
 - Prefer Graphite (`gt`) for source-control operations instead of raw `git`.
 - Use Graphite for branch creation, stacking, restacking, submitting, syncing, and merging when Graphite can express the operation.

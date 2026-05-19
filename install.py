@@ -473,13 +473,29 @@ def install_scm_breeze():
     run(["bash", "-lc", cmd])
 
 
-def install_codex():
-    source = REPO_ROOT / "codex/config.toml"
+def install_claude():
+    source = REPO_ROOT / "claude/CLAUDE.md"
     if not source.exists():
+        print("skipping claude global instructions: no claude/CLAUDE.md present")
+        return
+    print("applying claude global instructions")
+    link_file(source, HOME / ".claude/CLAUDE.md")
+
+
+def install_codex():
+    agents_source = REPO_ROOT / "codex/AGENTS.md"
+    if agents_source.exists():
+        print("applying codex global instructions")
+        link_file(agents_source, HOME / ".codex/AGENTS.md")
+    else:
+        print("skipping codex global instructions: no codex/AGENTS.md present")
+
+    config_source = REPO_ROOT / "codex/config.toml"
+    if not config_source.exists():
         print("skipping codex config: no repo-local codex/config.toml present")
         return
     print("applying codex config")
-    link_file(source, HOME / ".codex/config.toml")
+    link_file(config_source, HOME / ".codex/config.toml")
 
 
 def install_hunk():
@@ -527,6 +543,7 @@ def run_install_flow():
     install_tmux()
     install_btop()
     install_vscode()
+    install_claude()
     install_codex()
     install_hunk()
     install_scm_breeze()
